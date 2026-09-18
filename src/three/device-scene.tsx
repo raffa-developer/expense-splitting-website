@@ -8,6 +8,7 @@ import { LaptopModel } from "@/three/laptop";
 import { PhoneModel, PHONE_SCREEN_TEXTURE } from "@/three/phone";
 import {
   createRadialTexture,
+  screenFadeThrough,
   screenOpacity,
   useScreenTextures
 } from "@/three/textures";
@@ -81,9 +82,7 @@ function Devices({ progress }: { progress: ScrollProgress }) {
     const pullBack = smoothstep(0.78, 0.9, value);
     const phoneIn = smoothstep(0.78, 0.9, value);
     const screen = smoothstep(0.52, 0.78, value) * 3;
-    const phoneScreen =
-      (((time / 6) % PHONE_SCREENS.length) + PHONE_SCREENS.length) %
-      PHONE_SCREENS.length;
+    const phoneScreen = (time / 6) % PHONE_SCREENS.length;
 
     screenMaterials.current.forEach((material, index) => {
       if (material) {
@@ -91,9 +90,17 @@ function Devices({ progress }: { progress: ScrollProgress }) {
       }
     });
     phoneMaterials.current.forEach((material, index) => {
-      if (material) {
-        material.opacity = screenOpacity(phoneScreen - index, 0.15);
+      if (!material) {
+        return;
       }
+      let delta = phoneScreen - index;
+      if (delta > PHONE_SCREENS.length / 2) {
+        delta -= PHONE_SCREENS.length;
+      }
+      if (delta < -PHONE_SCREENS.length / 2) {
+        delta += PHONE_SCREENS.length;
+      }
+      material.opacity = screenFadeThrough(delta, 0.85, 0.12);
     });
 
     if (root.current) {

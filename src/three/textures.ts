@@ -134,3 +134,18 @@ export function screenOpacity(delta: number, fade: number): number {
   const value = (1 - Math.abs(delta)) / fade;
   return Math.min(1, Math.max(0, value));
 }
+
+export function screenFadeThrough(
+  delta: number,
+  hold = 0.85,
+  fade = 0.12
+): number {
+  const distance = Math.abs(delta);
+  if (distance <= hold - fade) {
+    return 1;
+  }
+  if (distance >= hold + fade) {
+    return 0;
+  }
+  return (hold + fade - distance) / (2 * fade);
+}
