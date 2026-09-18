@@ -30,6 +30,9 @@
   --font-mono:
     "DM Mono", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
 
+  --text-hero: clamp(3rem, 7vw, 5rem);
+  --text-caption: clamp(2.25rem, 5vw, 3.75rem);
+
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
   --color-surface-strong: var(--surface-strong);
@@ -86,13 +89,21 @@
       color-mix(in oklab, var(--apricot) 8%, transparent),
       transparent 50%
     ),
-    linear-gradient(to right, rgba(240, 234, 226, 0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(240, 234, 226, 0.045) 1px, transparent 1px);
+    linear-gradient(to right, rgba(240, 234, 226, 0.027) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(240, 234, 226, 0.027) 1px, transparent 1px);
   background-size:
     auto,
     auto,
     72px 72px,
     72px 72px;
+}
+
+@utility stage-vignette {
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    transparent 30%,
+    rgba(10, 8, 6, 0.55) 100%
+  );
 }
 
 @utility card-surface {

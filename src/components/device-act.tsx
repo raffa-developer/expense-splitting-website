@@ -77,6 +77,7 @@ export function DeviceAct() {
     <section id="app" ref={section} className="relative h-[220vh]">
       <div className="sticky top-0 flex h-svh items-center overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(111,191,170,0.12),transparent_55%)]" />
+        <div className="stage-vignette pointer-events-none absolute inset-0" />
 
         <div className="relative mx-auto flex w-full max-w-6xl flex-col px-6">
           <h2 className="text-3xl font-extrabold sm:text-4xl">
@@ -107,7 +108,7 @@ export function DeviceAct() {
                 <p
                   key={caption}
                   ref={captions[index]}
-                  className="absolute inset-x-0 bottom-0 font-display text-[clamp(2.25rem,5vw,3.75rem)] font-extrabold leading-[1.05] tracking-[-0.02em] text-ink opacity-0 [text-shadow:0_2px_18px_rgba(0,0,0,0.85),0_1px_3px_rgba(0,0,0,0.6)]"
+                  className="absolute inset-x-0 bottom-0 font-display text-(length:--text-caption) font-extrabold leading-[1.05] tracking-[-0.02em] text-ink opacity-0 [text-shadow:0_2px_18px_rgba(0,0,0,0.85),0_1px_3px_rgba(0,0,0,0.6)]"
                 >
                   {caption}
                 </p>

@@ -160,6 +160,7 @@ export function SplitAct() {
   return (
     <section id="top" ref={section} className="relative h-[250vh]">
       <div className="grid-backdrop sticky top-0 h-svh overflow-hidden">
+        <div className="stage-vignette pointer-events-none absolute inset-0" />
         {showCoin ? (
           <div className="absolute inset-0">
             <Suspense fallback={null}>
@@ -186,7 +187,7 @@ export function SplitAct() {
             <div className="-mb-[0.12em] overflow-hidden pb-[0.12em]">
               <h1
                 ref={title}
-                className="text-4xl leading-[1.1] font-extrabold sm:text-5xl lg:text-6xl"
+                className="text-(length:--text-hero) leading-[1.1] font-extrabold"
               >
                 {t("hero.title")}
               </h1>
