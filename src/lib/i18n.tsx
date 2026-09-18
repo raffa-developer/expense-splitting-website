@@ -29,6 +29,11 @@ const pt = {
   "split.title": "Cada um paga a sua parte.",
   "split.body":
     "Igual, valores exatos, percentagens ou quotas. O motor distribui os cêntimos com arredondamento largest-remainder para que a soma bata sempre ao cêntimo.",
+  "split.share1": "40,00 €",
+  "split.share2": "25,00 €",
+  "split.share3": "15,00 €",
+  "split.share4": "10,00 €",
+  "split.share5": "10,00 €",
 
   "mechanics.title": "Simples por fora, exato por dentro.",
   "mechanics.split.title": "Quatro formas de dividir",
@@ -93,6 +98,11 @@ const en: Record<keyof typeof pt, string> = {
   "split.title": "Everyone pays their share.",
   "split.body":
     "Equal, exact amounts, percentages or weights. The engine distributes cents with largest-remainder rounding so the sum always lands to the cent.",
+  "split.share1": "40,00 €",
+  "split.share2": "25,00 €",
+  "split.share3": "15,00 €",
+  "split.share4": "10,00 €",
+  "split.share5": "10,00 €",
 
   "mechanics.title": "Simple outside, exact inside.",
   "mechanics.split.title": "Four ways to split",

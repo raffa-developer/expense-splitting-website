@@ -22,7 +22,10 @@ export function SplitAct() {
   const { t } = useI18n();
   const section = useRef<HTMLElement | null>(null);
   const hero = useRef<HTMLDivElement>(null);
-  const split = useRef<HTMLDivElement>(null);
+  const captionOne = useRef<HTMLDivElement>(null);
+  const captionTwo = useRef<HTMLParagraphElement>(null);
+  const sliceRows = useRef<(HTMLDivElement | null)[]>([]);
+  const stageDim = useRef<HTMLDivElement>(null);
   const hint = useRef<HTMLParagraphElement>(null);
   const title = useRef<HTMLHeadingElement>(null);
   const body = useRef<HTMLParagraphElement>(null);
@@ -33,22 +36,54 @@ export function SplitAct() {
   const coinNear = useInRange(section, 1.1, 0);
   const showCoin = webgl && coinNear;
 
-  const progress = useScrollProgress(section, (value) => {
-    if (hero.current) {
-      const fade = clamp(1 - value / 0.26);
-      hero.current.style.opacity = String(fade);
-      hero.current.style.transform = `translateY(${(1 - fade) * -48}px)`;
-      hero.current.style.pointerEvents = fade < 0.5 ? "none" : "auto";
-    }
-    if (split.current) {
-      const reveal = smoothstep(0.42, 0.62, value);
-      split.current.style.opacity = String(reveal);
-      split.current.style.transform = `translateY(${(1 - reveal) * 36}px)`;
-    }
-    if (hint.current) {
-      hint.current.style.opacity = String(clamp(1 - value / 0.12));
-    }
-  });
+  const SLICES = [
+    { tint: "#4fbfae", label: t("split.share1") },
+    { tint: "#ff9e72", label: t("split.share2") },
+    { tint: "#a78bfa", label: t("split.share3") },
+    { tint: "#e58270", label: t("split.share4") },
+    { tint: "#6fbfaa", label: t("split.share5") }
+  ];
+
+  const progress = useScrollProgress(
+    section,
+    (value) => {
+      if (hero.current) {
+        const away = smoothstep(0.12, 0.26, value);
+        hero.current.style.opacity = String(1 - away);
+        hero.current.style.transform = `translateY(${-away * 48}px)`;
+        hero.current.style.pointerEvents = away > 0.5 ? "none" : "auto";
+      }
+      if (captionOne.current) {
+        captionOne.current.style.opacity = String(
+          smoothstep(0.26, 0.42, value) * (1 - smoothstep(0.5, 0.6, value))
+        );
+      }
+      if (captionTwo.current) {
+        captionTwo.current.style.opacity = String(
+          smoothstep(0.44, 0.6, value) * (1 - smoothstep(0.82, 0.92, value))
+        );
+      }
+      sliceRows.current.forEach((row, index) => {
+        if (!row) {
+          return;
+        }
+        const show = smoothstep(
+          0.44 + index * 0.025,
+          0.52 + index * 0.025,
+          value
+        );
+        row.style.opacity = String(show * (1 - smoothstep(0.86, 0.95, value)));
+        row.style.transform = `translateX(${(1 - show) * 20}px)`;
+      });
+      if (stageDim.current) {
+        stageDim.current.style.opacity = String(smoothstep(0.82, 1, value) * 0.55);
+      }
+      if (hint.current) {
+        hint.current.style.opacity = String(clamp(1 - value / 0.12));
+      }
+    },
+    !reduce
+  );
 
   useEffect(() => {
     if (reduce) {
@@ -92,6 +127,34 @@ export function SplitAct() {
     return () => {
       timeline.revert();
     };
+  }, [reduce]);
+
+  useEffect(() => {
+    if (!reduce) {
+      return;
+    }
+    progress.current = 0.7;
+    if (hero.current) {
+      hero.current.style.opacity = "0";
+      hero.current.style.transform = "translateY(-48px)";
+      hero.current.style.pointerEvents = "none";
+    }
+    if (captionOne.current) {
+      captionOne.current.style.opacity = "1";
+    }
+    if (captionTwo.current) {
+      captionTwo.current.style.opacity = "1";
+    }
+    sliceRows.current.forEach((row) => {
+      if (!row) {
+        return;
+      }
+      row.style.opacity = "1";
+      row.style.transform = "translateX(0)";
+    });
+    if (stageDim.current) {
+      stageDim.current.style.opacity = "0";
+    }
   }, [reduce]);
 
   return (
@@ -164,16 +227,43 @@ export function SplitAct() {
             </div>
           </div>
 
-          <div ref={split} className="max-w-md opacity-0">
-            <p className="text-sm font-semibold text-apricot">
-              {t("split.kicker")}
-            </p>
-            <h2 className="mt-3 text-3xl font-extrabold sm:text-4xl">
-              {t("split.title")}
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-muted">
-              {t("split.body")}
-            </p>
+          <div className="max-w-2xl">
+            <div ref={captionOne} className="opacity-0">
+              <p className="text-sm font-semibold text-apricot">
+                {t("split.kicker")}
+              </p>
+              <h2 className="mt-3 text-3xl font-extrabold sm:text-4xl">
+                {t("split.title")}
+              </h2>
+            </div>
+            <div className="mt-8 flex flex-wrap items-start gap-x-14 gap-y-6">
+              <p
+                ref={captionTwo}
+                className="max-w-sm text-sm leading-relaxed text-muted opacity-0"
+              >
+                {t("split.body")}
+              </p>
+              <div className="space-y-3">
+                {SLICES.map((slice, index) => (
+                  <div
+                    key={slice.tint}
+                    ref={(element) => {
+                      sliceRows.current[index] = element;
+                    }}
+                    className="flex items-center gap-3 opacity-0"
+                  >
+                    <span
+                      aria-hidden
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ background: slice.tint }}
+                    />
+                    <span className="money text-sm text-ink">
+                      {slice.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -186,6 +276,11 @@ export function SplitAct() {
             <ArrowDown size={14} aria-hidden className="scroll-hint-arrow" />
           </p>
         )}
+
+        <div
+          ref={stageDim}
+          className="pointer-events-none absolute inset-0 bg-black opacity-0"
+        />
       </div>
     </section>
   );
