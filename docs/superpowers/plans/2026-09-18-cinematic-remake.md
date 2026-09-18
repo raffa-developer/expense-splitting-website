@@ -392,7 +392,7 @@ export function LaptopModel({
         <primitive object={aluminiumDark} attach="material" />
       </RoundedBox>
 
-      <group ref={lidRef} position={[0, -1.0, -0.02]} rotation={[-1.2, 0, 0]}>
+      <group ref={lidRef} position={[0, -1.0, -0.02]} rotation={[1.57, 0, 0]}>
         <RoundedBox
           args={[2.62, 1.7, 0.06]}
           radius={0.04}
@@ -573,7 +573,7 @@ function Devices({ progress }: { progress: ScrollProgress }) {
       root.current.rotation.y = pointerY.current;
     }
     if (lid.current) {
-      lid.current.rotation.x = THREE.MathUtils.lerp(-1.2, -0.15, open);
+      lid.current.rotation.x = THREE.MathUtils.lerp(1.57, -0.15, open);
     }
     if (glow.current) {
       glow.current.opacity = open * (0.5 + 0.06 * Math.sin(time * 2.2));
@@ -678,7 +678,7 @@ Expected: 0 errors. Check the screenshots: laptop rises with the lid closed at 0
 
 - [ ] **Step 1: Polish the coin body**
 
-In `coin-scene.tsx`: raise the cylinder radial segments to 128, keep the ridges and ring. Give the two coin faces a `MeshPhysicalMaterial` with `clearcoat: 0.4`, `clearcoatRoughness: 0.25`, `metalness: 1`, `roughness: 0.3`, color `#b07f4f`; the edge stays `MeshStandardMaterial` brass.
+In `coin-scene.tsx`: raise the cylinder radial segments to 40 per wedge (200 around the circle; the spec's ~4k budget binds, so not 128 per wedge), reduce the ring torus to `args={[1.1, 0.02, 10, 48]}`, keep the ridges and ring. Give the two coin faces a `MeshPhysicalMaterial` with `clearcoat: 0.4`, `clearcoatRoughness: 0.25`, `metalness: 1`, `roughness: 0.3`, color `#b07f4f`; the edge stays `MeshStandardMaterial` brass. Measure the total coin triangle count with three's `renderer.info` or by summing geometry index counts, and report the real number in the task report.
 
 - [ ] **Step 2: Replace the slice choreography**
 
@@ -724,7 +724,20 @@ rimLight.current.intensity = 2 * exitDim;
 
 - [ ] **Step 5: Hero phone dissolves only**
 
-In `HeroPhone`: delete the `cycleFlip` rotation term and keep the screen opacity with `screenOpacity(deltaFor(index), 0.15)`. The phone keeps its fixed rotation, bob, and screen dissolves.
+In `HeroPhone`: delete the `cycleFlip` rotation term and switch the screen opacity to the fade-through helper with a circular delta (same ruling as the device scene, avoids the 5.5s cycle wrap pop):
+
+```ts
+let delta = raw - index;
+if (delta > count / 2) {
+  delta -= count;
+}
+if (delta < -count / 2) {
+  delta += count;
+}
+material.opacity = screenFadeThrough(delta, 0.85, 0.12);
+```
+
+Import `screenFadeThrough` from `@/three/textures`. The phone keeps its fixed rotation, bob, and dissolves.
 
 - [ ] **Step 6: Import `screenOpacity` from `@/three/textures`**
 
