@@ -129,3 +129,8 @@ export function useScreenTextures(
 
   return textures;
 }
+
+export function screenOpacity(delta: number, fade: number): number {
+  const value = (1 - Math.abs(delta)) / fade;
+  return Math.min(1, Math.max(0, value));
+}
