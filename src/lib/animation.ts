@@ -7,7 +7,8 @@ export interface ScrollProgress {
 
 export function useScrollProgress(
   target: RefObject<HTMLElement | null>,
-  onUpdate?: (value: number) => void
+  onUpdate?: (value: number) => void,
+  enabled = true
 ): ScrollProgress {
   const progress = useRef(0);
   const callback = useRef(onUpdate);
@@ -18,6 +19,7 @@ export function useScrollProgress(
     if (!element) {
       return;
     }
+    if (!enabled) return;
     progress.current = 0;
     callback.current?.(0);
     const animation = animate(progress, {

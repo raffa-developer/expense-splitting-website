@@ -8,10 +8,12 @@ import { SettleSection } from "@/components/settle-section";
 import { SplitAct } from "@/components/split-act";
 import { TechSection } from "@/components/tech-section";
 import { useGlobalScrollProgress } from "@/lib/animation";
+import { useLenis } from "@/lib/lenis";
 
 export function App() {
   const bar = useRef<HTMLDivElement>(null);
   useGlobalScrollProgress(bar);
+  useLenis();
 
   return (
     <div className="relative overflow-x-clip">
