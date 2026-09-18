@@ -1,13 +1,12 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
-import { Html } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PhoneModel, PHONE_SCREEN_TEXTURE } from "@/three/phone";
-import { screenOpacity } from "@/three/models";
 import { ProceduralEnvironment } from "@/three/environment";
 import { ContextReleaser } from "@/three/context-releaser";
 import {
   createRadialTexture,
+  screenFadeThrough,
   useScreenTextures
 } from "@/three/textures";
 import { StaticCoin } from "@/components/static-coin";
@@ -43,7 +42,7 @@ function wedgeGeometry(start: number, end: number): THREE.ExtrudeGeometry {
   const geometry = new THREE.ExtrudeGeometry(shape, {
     depth: DEPTH,
     bevelEnabled: false,
-    curveSegments: 48
+    curveSegments: 128
   });
   geometry.translate(0, 0, -DEPTH / 2);
   geometry.computeVertexNormals();
@@ -94,7 +93,6 @@ function Coin({
   const root = useRef<THREE.Group>(null);
   const assembled = useRef<THREE.Group>(null);
   const slices = useRef<(THREE.Group | null)[]>([]);
-  const labelRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const lookAt = useMemo(() => new THREE.Vector3(offsetX * 0.2, 0, 0), [offsetX]);
 
   const parts = useMemo(() => {
@@ -103,16 +101,9 @@ function Coin({
       const start = angle;
       const end = angle + segment.share * Math.PI * 2;
       angle = end;
-      const mid = (start + end) / 2;
       return {
         ...segment,
-        geometry: wedgeGeometry(start, end),
-        direction: new THREE.Vector3(Math.cos(mid), Math.sin(mid), 0),
-        labelPosition: [
-          Math.cos(mid) * 0.6,
-          Math.sin(mid) * 0.6,
-          DEPTH / 2 + 0.02
-        ] as [number, number, number]
+        geometry: wedgeGeometry(start, end)
       };
     });
   }, []);
@@ -132,11 +123,7 @@ function Coin({
         pointer.y * 0.09 - 0.03,
         0.05
       );
-      root.current.rotation.y = THREE.MathUtils.lerp(
-        root.current.rotation.y,
-        pointer.x * 0.14 + Math.sin(time * 0.16) * 0.03,
-        0.05
-      );
+      root.current.rotation.y = time * 0.12 + value * 0.9;
       root.current.rotation.z = Math.sin(time * 0.12) * 0.04;
       root.current.scale.setScalar(scale);
     }
@@ -147,23 +134,15 @@ function Coin({
     }
 
     slices.current.forEach((slice, index) => {
-      const part = parts[index];
-      if (!slice || !part) {
+      if (!slice) {
         return;
       }
-      const drift = explode * 0.72;
-      slice.position.x += (part.direction.x * drift - slice.position.x) * 0.085;
-      slice.position.y += (part.direction.y * drift - slice.position.y) * 0.085;
-      slice.position.z += (explode * 0.07 - slice.position.z) * 0.085;
-      const fan = explode * 0.18 * (index % 2 === 0 ? 1 : -1);
-      slice.rotation.z += (fan - slice.rotation.z) * 0.07;
-    });
-
-    const labelOpacity = smoothstep(0.56, 0.82, value);
-    labelRefs.current.forEach((node) => {
-      if (node) {
-        node.style.opacity = String(labelOpacity);
-      }
+      const sliceOpen = smoothstep(
+        0.42 + index * 0.025,
+        0.62 + index * 0.025,
+        value
+      );
+      slice.rotation.z = -sliceOpen * (0.5 + index * 0.16);
     });
 
     const camera = state.camera;
@@ -192,31 +171,17 @@ function Coin({
           }}
         >
           <mesh geometry={part.geometry}>
-            <meshStandardMaterial
-              color="#c09458"
-              metalness={0.92}
-              roughness={0.36}
+            <meshPhysicalMaterial
+              color="#b07f4f"
+              metalness={1}
+              roughness={0.3}
+              clearcoat={0.4}
+              clearcoatRoughness={0.25}
               envMapIntensity={0.9}
               emissive={part.tint}
               emissiveIntensity={0.05}
             />
           </mesh>
-          <Html
-            position={part.labelPosition}
-            center
-            distanceFactor={6}
-            zIndexRange={[20, 0]}
-            style={{ pointerEvents: "none" }}
-          >
-            <span
-              ref={(node) => {
-                labelRefs.current[index] = node;
-              }}
-              className="money rounded-full border border-white/10 bg-black/70 px-2.5 py-1 text-[11px] whitespace-nowrap text-ink/90 opacity-0"
-            >
-              {part.label}
-            </span>
-          </Html>
         </group>
       ))}
 
@@ -269,7 +234,6 @@ function HeroPhone({
     const enter = smoothstep(0, 0.22, value);
     const count = PHONE_SCREENS.length;
     const raw = (((time / 5.5 - 0.1) % count) + count) % count;
-    const cycle = (time / 5.5) % 1;
     const deltaFor = (index: number): number => {
       let delta = raw - index;
       if (delta > count / 2) {
@@ -285,10 +249,8 @@ function HeroPhone({
       if (!material) {
         return;
       }
-      material.opacity = screenOpacity(deltaFor(index), 0.15);
+      material.opacity = screenFadeThrough(deltaFor(index), 0.85, 0.12);
     });
-
-    const cycleFlip = smoothstep(0.82, 1, cycle);
 
     if (root.current) {
       root.current.position.y =
@@ -297,8 +259,7 @@ function HeroPhone({
       root.current.rotation.y =
         baseTilt +
         (1 - enter) * -0.95 +
-        Math.sin(time * 0.4) * 0.04 +
-        cycleFlip * Math.PI * 2;
+        Math.sin(time * 0.4) * 0.04;
       root.current.scale.setScalar(baseScale * (1 - exit * 0.3));
     }
   });
@@ -330,6 +291,38 @@ function HeroPhone({
   );
 }
 
+function SceneLights({ progress }: { progress: ScrollProgress }) {
+  const keyLight = useRef<THREE.DirectionalLight>(null);
+  const rimLight = useRef<THREE.PointLight>(null);
+
+  useFrame(() => {
+    const exitDim = 1 - smoothstep(0.82, 1, progress.current) * 0.7;
+    if (keyLight.current) {
+      keyLight.current.intensity = 1.2 * exitDim;
+    }
+    if (rimLight.current) {
+      rimLight.current.intensity = 2 * exitDim;
+    }
+  });
+
+  return (
+    <>
+      <directionalLight
+        ref={keyLight}
+        position={[3, 4, 5]}
+        intensity={1.2}
+        color="#fff4e8"
+      />
+      <pointLight
+        ref={rimLight}
+        position={[-4, -1, 3]}
+        intensity={2}
+        color="#6fbfaa"
+      />
+    </>
+  );
+}
+
 export default function CoinCanvas({
   progress,
   offsetX = 0,
@@ -357,8 +350,7 @@ export default function CoinCanvas({
       <ContextReleaser />
       <ProceduralEnvironment />
       <ambientLight intensity={0.35} />
-      <directionalLight position={[3, 4, 5]} intensity={1.2} color="#fff4e8" />
-      <pointLight position={[-4, -1, 3]} intensity={2} color="#6fbfaa" />
+      <SceneLights progress={progress} />
       <pointLight position={[4, 1, 2]} intensity={1.6} color="#ff9e72" />
       <Coin
         progress={progress}
