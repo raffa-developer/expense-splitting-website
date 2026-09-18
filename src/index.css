@@ -1,0 +1,128 @@
+@import "tailwindcss";
+@import "@fontsource-variable/gabarito";
+@import "@fontsource-variable/karla";
+@import "@fontsource/dm-mono/400.css";
+@import "@fontsource/dm-mono/500.css";
+
+:root {
+  --canvas: #120f0d;
+  --surface: #1b1512;
+  --surface-strong: #241c16;
+  --ink: #f0eae2;
+  --muted: #a79c90;
+  --pine: #6fbfaa;
+  --apricot: #ff9e72;
+  --teal: #4fbfae;
+  --plum: #a78bfa;
+  --brick: #e58270;
+  --butter: #e9c46a;
+  --line: rgba(240, 234, 226, 0.12);
+  --radius: 1rem;
+}
+
+@theme inline {
+  --font-sans:
+    "Karla Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-display:
+    "Gabarito Variable", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-mono:
+    "DM Mono", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-pine: var(--pine);
+  --color-apricot: var(--apricot);
+  --color-teal: var(--teal);
+  --color-plum: var(--plum);
+  --color-brick: var(--brick);
+  --color-butter: var(--butter);
+  --color-line: var(--line);
+
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-canvas text-ink antialiased;
+    font-family: var(--font-sans);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
+  }
+  ::selection {
+    background-color: color-mix(in oklab, var(--apricot) 30%, transparent);
+  }
+}
+
+@utility money {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+@utility grid-backdrop {
+  background-image:
+    radial-gradient(
+      circle at 50% 0%,
+      color-mix(in oklab, var(--pine) 12%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 80% 100%,
+      color-mix(in oklab, var(--apricot) 8%, transparent),
+      transparent 50%
+    ),
+    linear-gradient(to right, rgba(240, 234, 226, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(240, 234, 226, 0.045) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    72px 72px,
+    72px 72px;
+}
+
+@utility card-surface {
+  background: color-mix(in oklab, var(--surface) 88%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(8px);
+}
+
+@keyframes scroll-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(4px);
+    opacity: 1;
+  }
+}
+
+.scroll-hint-arrow {
+  animation: scroll-hint 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .scroll-hint-arrow {
+    animation: none;
+  }
+}
