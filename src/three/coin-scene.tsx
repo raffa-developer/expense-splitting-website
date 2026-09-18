@@ -42,7 +42,7 @@ function wedgeGeometry(start: number, end: number): THREE.ExtrudeGeometry {
   const geometry = new THREE.ExtrudeGeometry(shape, {
     depth: DEPTH,
     bevelEnabled: false,
-    curveSegments: 128
+    curveSegments: 40
   });
   geometry.translate(0, 0, -DEPTH / 2);
   geometry.computeVertexNormals();
@@ -188,7 +188,7 @@ function Coin({
       <group ref={assembled}>
         <RidgedEdge />
         <mesh position={[0, 0, DEPTH / 2 + 0.012]}>
-          <torusGeometry args={[0.66, 0.026, 14, 64]} />
+          <torusGeometry args={[1.1, 0.02, 10, 48]} />
           <meshStandardMaterial
             color="#e0b978"
             metalness={0.95}
