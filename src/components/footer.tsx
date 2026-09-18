@@ -14,7 +14,6 @@ export function Footer() {
         </span>
         <span>© {year}</span>
         <span className="hidden sm:inline">{t("footer.made")}</span>
-        <span className="w-full text-xs text-muted/70">{t("footer.credits")}</span>
         <a
           href={GITHUB_URL}
           target="_blank"

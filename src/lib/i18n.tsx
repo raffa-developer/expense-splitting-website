@@ -73,8 +73,6 @@ const pt = {
   "run.copied": "Copiado",
 
   "footer.made": "Feito com React, Fastify e PostgreSQL.",
-  "footer.credits":
-    "Modelos 3D: MacBook por Alex Safayan e iPhone por polyman, CC BY 4.0.",
   "footer.repo": "Repositório",
   "footer.language": "Idioma"
 } as const;
@@ -142,8 +140,6 @@ const en: Record<keyof typeof pt, string> = {
   "run.copied": "Copied",
 
   "footer.made": "Built with React, Fastify and PostgreSQL.",
-  "footer.credits":
-    "3D models: MacBook by Alex Safayan and iPhone by polyman, CC BY 4.0.",
   "footer.repo": "Repository",
   "footer.language": "Language"
 };
