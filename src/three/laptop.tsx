@@ -42,6 +42,7 @@ export function LaptopModel({
       keyMaterial,
       rows * cols
     );
+    mesh.frustumCulled = false;
     const matrix = new THREE.Matrix4();
     let index = 0;
     for (let row = 0; row < rows; row += 1) {
@@ -103,7 +104,7 @@ export function LaptopModel({
         <primitive object={aluminiumDark} attach="material" />
       </RoundedBox>
 
-      <group ref={lidRef} position={[0, -1.0, -0.02]} rotation={[-1.2, 0, 0]}>
+      <group ref={lidRef} position={[0, -1.0, -0.02]} rotation={[1.57, 0, 0]}>
         <RoundedBox
           args={[2.62, 1.7, 0.06]}
           radius={0.04}
