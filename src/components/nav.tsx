@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useI18n } from "@/lib/i18n";
 import { GITHUB_URL } from "@/lib/site";
 
@@ -12,13 +12,29 @@ export function GithubMark({ className = "size-4" }: { className?: string }) {
 
 export function Nav() {
   const { t, locale, setLocale } = useI18n();
-  const [scrolled, setScrolled] = useState(false);
+  const header = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 24);
-    handler();
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const scrolled = window.scrollY > 80;
+      header.current?.classList.toggle("bg-canvas/80", scrolled);
+      header.current?.classList.toggle("backdrop-blur-md", scrolled);
+      header.current?.classList.toggle("py-4", !scrolled);
+      header.current?.classList.toggle("py-2", scrolled);
+    };
+    const request = () => {
+      if (!frame) {
+        frame = requestAnimationFrame(update);
+      }
+    };
+    update();
+    window.addEventListener("scroll", request, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", request);
+      cancelAnimationFrame(frame);
+    };
   }, []);
 
   const links = [
@@ -30,11 +46,10 @@ export function Nav() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
-        scrolled ? "border-b border-line bg-canvas/85 backdrop-blur" : ""
-      }`}
+      ref={header}
+      className="fixed inset-x-0 top-0 z-50 transition-all duration-300"
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-6">
+      <div className="mx-auto flex max-w-6xl items-center gap-6 px-6">
         <a
           href="#top"
           className="font-display text-[15px] font-bold tracking-tight"

@@ -16,7 +16,7 @@ export function SettleSection() {
   return (
     <section className="mx-auto max-w-6xl px-6 py-28">
       <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-        <Reveal>
+        <Reveal delay={0}>
           <div>
             <h2 className="text-3xl font-extrabold sm:text-4xl">
               {t("settle.title")}
@@ -32,7 +32,7 @@ export function SettleSection() {
             const key = `${transfer.from}-${transfer.to}`;
             const isPaid = paid.includes(key);
             return (
-              <Reveal key={key} delay={index * 80}>
+              <Reveal key={key} delay={(index + 1) * 90}>
                 <li
                   className={`card-surface flex flex-wrap items-center gap-3 p-4 transition-opacity duration-500 ${
                     isPaid ? "opacity-60" : ""

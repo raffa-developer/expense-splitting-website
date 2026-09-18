@@ -21,7 +21,7 @@ export function RunSection() {
   return (
     <section id="run" className="mx-auto max-w-6xl px-6 py-28">
       <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-        <Reveal>
+        <Reveal delay={0}>
           <div>
             <h2 className="text-3xl font-extrabold sm:text-4xl">
               {t("run.title")}
@@ -41,7 +41,7 @@ export function RunSection() {
           </div>
         </Reveal>
 
-        <Reveal delay={0.1}>
+        <Reveal delay={90}>
           <div className="card-surface overflow-hidden">
             <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
               <span className="money text-xs text-muted">bash</span>
