@@ -1,11 +1,8 @@
-import { lazy, Suspense, useMemo, useRef } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef } from "react";
 import { useI18n } from "@/lib/i18n";
-import {
-  clamp,
-  smoothstep,
-  useScrollProgress
-} from "@/lib/animation";
+import { smoothstep, useScrollProgress } from "@/lib/animation";
 import { supportsWebGL, useInRange, useMediaQuery } from "@/lib/use-media";
+import { screenOpacity } from "@/three/textures";
 import overview from "@/assets/screens/desktop-group.png";
 
 const DeviceCanvas = lazy(() => import("@/three/device-scene"));
@@ -22,33 +19,51 @@ export function DeviceAct() {
     useRef<HTMLParagraphElement>(null)
   ];
   const wide = useMediaQuery("(min-width: 900px)");
+  const reduce = useMediaQuery("(prefers-reduced-motion: reduce)");
   const webgl = useMemo(() => supportsWebGL(), []);
   const deviceNear = useInRange(section, -0.12, -0.3);
   const canRenderDevice = webgl && wide;
   const showDevice = canRenderDevice && deviceNear;
 
-  const progress = useScrollProgress(section, (value) => {
-    const screen =
-      Math.min(smoothstep(0.06, 0.16, value), 1) +
-      smoothstep(0.76, 0.94, value) * 2;
-    const laptopOut = 1 - smoothstep(0.8, 0.86, value);
+  const progress = useScrollProgress(
+    section,
+    (value) => {
+      const screen = smoothstep(0.52, 0.78, value) * 3;
+      const laptopOut = 1 - smoothstep(0.78, 0.86, value);
+      captions.forEach((ref, index) => {
+        const element = ref.current;
+        if (!element) {
+          return;
+        }
+        const opacity =
+          index < 4
+            ? screenOpacity(screen - index, 0.5) * laptopOut
+            : smoothstep(0.8, 0.88, value) * (1 - smoothstep(0.95, 1, value));
+        element.style.opacity = String(opacity);
+        element.style.transform = `translateY(${(1 - opacity) * 14}px)`;
+      });
+      if (fallback.current) {
+        const zoom = 1 + smoothstep(0.1, 0.8, value) * 0.5;
+        fallback.current.style.transform = `scale(${zoom})`;
+      }
+    },
+    !reduce
+  );
+
+  useEffect(() => {
+    if (!reduce) {
+      return;
+    }
+    progress.current = 1;
     captions.forEach((ref, index) => {
       const element = ref.current;
       if (!element) {
         return;
       }
-      const opacity =
-        index < 4
-          ? clamp((0.7 - Math.abs(screen - index)) / 0.2) * laptopOut
-          : smoothstep(0.8, 0.88, value) * (1 - smoothstep(0.95, 1, value));
-      element.style.opacity = String(opacity);
-      element.style.transform = `translateY(${(1 - opacity) * 14}px)`;
+      element.style.opacity = index === 4 ? "1" : "0";
+      element.style.transform = "translateY(0)";
     });
-    if (fallback.current) {
-      const zoom = 1 + smoothstep(0.1, 0.8, value) * 0.5;
-      fallback.current.style.transform = `scale(${zoom})`;
-    }
-  });
+  }, [reduce]);
 
   const captionsText = [
     t("device.caption1"),
@@ -87,12 +102,12 @@ export function DeviceAct() {
               </div>
             )}
 
-            <div className="pointer-events-none absolute bottom-2 left-6 h-28 w-[min(21rem,70vw)] sm:bottom-6">
+            <div className="pointer-events-none absolute bottom-2 left-6 h-28 w-[min(18rem,60vw)] sm:bottom-6 sm:w-[min(21rem,70vw)]">
               {captionsText.map((caption, index) => (
                 <p
                   key={caption}
                   ref={captions[index]}
-                  className="absolute inset-x-0 bottom-0 text-2xl leading-tight font-extrabold text-ink opacity-0 [text-shadow:0_2px_18px_rgba(0,0,0,0.85),0_1px_3px_rgba(0,0,0,0.6)] sm:text-3xl"
+                  className="absolute inset-x-0 bottom-0 font-display text-[clamp(2.25rem,5vw,3.75rem)] font-extrabold leading-[1.05] tracking-[-0.02em] text-ink opacity-0 [text-shadow:0_2px_18px_rgba(0,0,0,0.85),0_1px_3px_rgba(0,0,0,0.6)]"
                 >
                   {caption}
                 </p>
