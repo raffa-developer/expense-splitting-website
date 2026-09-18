@@ -36,7 +36,7 @@ export function useScrollProgress(
     return () => {
       animation.revert();
     };
-  }, [target]);
+  }, [target, enabled]);
 
   return progress;
 }
