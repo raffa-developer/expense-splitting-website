@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { coinSegmentAngles } from "@/three/product-film/coin";
 import { applyScreenOpacities } from "@/three/product-film/laptop";
+import { STUDIO_PALETTE } from "@/three/product-film/studio";
 import {
   clampOrbit,
   getProductFilmState,
@@ -37,5 +38,10 @@ describe("product-film motion", () => {
     const target = [{ opacity: 0 }, { opacity: 0 }];
     applyScreenOpacities(target, [1.2, -0.2]);
     expect(target).toEqual([{ opacity: 1 }, { opacity: 0 }]);
+  });
+
+  it("uses the prescribed studio palette", () => {
+    expect(STUDIO_PALETTE.settleGreen).toBe("#72e1b1");
+    expect(STUDIO_PALETTE.studioBlack).toBe("#080b10");
   });
 });
