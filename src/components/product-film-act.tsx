@@ -79,13 +79,9 @@ export function ProductFilmAct() {
   const wide = useMediaQuery("(min-width: 900px)");
   const motion = useMotion();
   const reduce = !motion;
-  const [webgl, setWebgl] = useState(() => webglSupport === true);
+  const [webgl] = useState(detectWebGLSupport);
   const near = useInRange(section, 1.1, 0);
   const showCanvas = webgl && near;
-
-  useEffect(() => {
-    setWebgl(detectWebGLSupport());
-  }, []);
 
   const progress = useScrollProgress(
     section,
@@ -173,7 +169,7 @@ export function ProductFilmAct() {
             <FilmCanvasBoundary
               fallback={<ProductFilmFallback compact={!wide} />}
             >
-              <Suspense fallback={<ProductFilmFallback compact={!wide} />}>
+              <Suspense fallback={null}>
                 <ProductFilmCanvas
                   progress={progress}
                   compact={!wide}
@@ -184,7 +180,9 @@ export function ProductFilmAct() {
           </div>
         ) : null}
 
-        {!showCanvas && wide ? <ProductFilmFallback compact={false} /> : null}
+        {!showCanvas && wide && !webgl ? (
+          <ProductFilmFallback compact={false} />
+        ) : null}
 
         <p
           ref={hint}
