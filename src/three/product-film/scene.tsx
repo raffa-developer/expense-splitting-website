@@ -25,7 +25,7 @@ import mobileExpenses from "@/assets/screens/mobile-expenses.png";
 const LAPTOP_SCREENS = [desktopDashboard, desktopGroup, desktopExpenses];
 const PHONE_SCREENS = [mobileDashboard, mobileGroup, mobileExpenses];
 
-const LAPTOP_SCREEN = { width: 3.08, height: 1.96 } as const;
+const LAPTOP_SCREEN = { width: 2.94, height: 1.96 } as const;
 const PHONE_SCREEN = { width: 0.8, height: 1.7 } as const;
 
 const DEG = Math.PI / 180;
