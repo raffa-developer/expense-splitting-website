@@ -1025,6 +1025,43 @@ Expected: clean, and the bundle drops ~1MB.
 
 ---
 
+### Task 12: Full 3D on mobile (device act)
+
+Added after Task 11 verification found the spec gap: the device act still swaps to a screenshot fallback below 900px, but the spec requires full 3D on mobile too.
+
+**Files:**
+- Modify: `src/components/device-act.tsx`, `src/three/device-scene.tsx`
+- Test: typecheck/build plus a 390x844 Playwright pass on the device act
+
+**Interfaces:**
+- Consumes: `LaptopModel`, `PhoneModel` as built; `useMediaQuery` in device-act.
+- Produces: `DeviceCanvas({ progress, compact?, reduce? })`; the act no longer gates on width.
+
+- [ ] **Step 1: Drop the width gate in `device-act.tsx`**
+
+Change `const canRenderDevice = webgl && wide;` to `const canRenderDevice = webgl;`, remove the now-unused `wide` line and the `useMediaQuery` import if nothing else uses it. The fallback now serves only the no-WebGL case at any width. Pass `compact={!wide}` — keep `wide` for this one use: `const wide = useMediaQuery("(min-width: 900px)");` stays, and the canvas gets `compact={!wide}`.
+
+- [ ] **Step 2: Portrait framing in `device-scene.tsx`**
+
+Add a `compact = false` prop to `DeviceCanvas`, passed to `Devices`. In the Devices `useFrame` and JSX:
+
+- Wrap `LaptopModel` in `<group scale={compact ? 0.68 : 1}>`.
+- Phone rest position x: `compact ? -0.95 : -1.55` (the `phoneIn` lerp start only; the close-up end stays `0.02`).
+- Phone rest scale: `compact ? 0.5 : 0.55` (the close-up end stays `0.92`).
+
+Camera, lid, dolly, dissolves, and the close-up targets stay unchanged: the close-up already fills a portrait frame because the phone travels to z 2.2 with the camera at distance 4.6.
+
+- [ ] **Step 3: Verify**
+
+Run: `npm run typecheck` then `npm run build`.
+Create a copy of `C:\Users\Administrator\AppData\Local\Temp\opencode\site-diag.py` named `site-diag-mobile.py` with the viewport changed to 390x844, then run: `python C:\Users\Administrator\AppData\Local\Temp\opencode\site-diag-mobile.py http://localhost:5199 "0.2,0.5,0.9" task12m`. Expect 0 errors and non-trivial screenshot sizes (the controller checks the frames).
+
+- [ ] **Step 4: Commit**
+
+Conventional message, e.g. `feat(device): render the device act on mobile`.
+
+---
+
 ### Task 11: Full verification against the spec
 
 **Files:**

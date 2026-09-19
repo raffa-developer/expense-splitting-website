@@ -60,9 +60,10 @@ all geometry is procedural, and shaders are prewarmed at startup.
 
 ### Shader prewarm
 
-On first load, a hidden 1x1 canvas renders once with every material the two acts
-use, then discards itself. A later canvas mount therefore compiles nothing and
-its first frame is cheap.
+WebGL programs are per-context, so a startup canvas cannot precompile another
+canvas's shaders. The equivalent guarantee comes from the device canvas
+mounting before its section pins and the laptop starting below the viewport:
+the first-frame compile happens while nothing is visible.
 
 ## Performance budget
 
