@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type RefObject } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { clamp } from "@/lib/animation";
@@ -16,7 +16,7 @@ export const STUDIO_PALETTE = {
 } as const;
 
 export interface StudioEnvironmentProps {
-  settled: number;
+  settledRef: RefObject<number>;
 }
 
 const FLOOR_SIZE = 64;
@@ -74,11 +74,9 @@ function createReflectionTexture(): THREE.CanvasTexture {
   return texture;
 }
 
-export function StudioEnvironment({ settled }: StudioEnvironmentProps) {
+export function StudioEnvironment({ settledRef }: StudioEnvironmentProps) {
   const scene = useThree((state) => state.scene);
   const fillRef = useRef<THREE.PointLight>(null);
-  const latest = useRef(settled);
-  latest.current = settled;
 
   const contactShadowTexture = useMemo(
     () =>
@@ -107,7 +105,7 @@ export function StudioEnvironment({ settled }: StudioEnvironmentProps) {
   useFrame(() => {
     const light = fillRef.current;
     if (light) {
-      light.intensity = clamp(latest.current) * GREEN_FILL_INTENSITY;
+      light.intensity = clamp(settledRef.current) * GREEN_FILL_INTENSITY;
     }
   });
 

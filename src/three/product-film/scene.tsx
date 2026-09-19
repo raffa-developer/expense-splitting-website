@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type PointerEvent } from "react";
+import { useLayoutEffect, useRef, type PointerEvent } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
@@ -19,17 +19,11 @@ import { STUDIO_PALETTE, StudioEnvironment } from "./studio";
 import desktopDashboard from "@/assets/screens/desktop-dashboard.png";
 import desktopGroup from "@/assets/screens/desktop-group.png";
 import desktopExpenses from "@/assets/screens/desktop-expenses.png";
-import desktopPeople from "@/assets/screens/desktop-people.png";
 import mobileDashboard from "@/assets/screens/mobile-dashboard.png";
 import mobileGroup from "@/assets/screens/mobile-group.png";
 import mobileExpenses from "@/assets/screens/mobile-expenses.png";
 
-const LAPTOP_SCREENS = [
-  desktopDashboard,
-  desktopGroup,
-  desktopExpenses,
-  desktopPeople
-];
+const LAPTOP_SCREENS = [desktopDashboard, desktopGroup, desktopExpenses];
 const PHONE_SCREENS = [mobileDashboard, mobileGroup, mobileExpenses];
 
 const LAPTOP_SCREEN = { width: 2.4, height: 1.6 } as const;
@@ -57,6 +51,8 @@ const COIN_PUCK_COMPACT = new THREE.Vector3(-1.6, 0.45, 1.1);
 const COIN_PUCK_SCALE = 0.32;
 const COIN_PUCK_SCALE_COMPACT = 0.22;
 const PHONE_RISE_SPAN = 0.4;
+const COMPACT_LAPTOP_SINK = 3.2;
+const COMPACT_LAPTOP_HANDOFF_END = 0.7;
 
 const BASE_POSITION = new THREE.Vector3();
 const FOCUS_POSITION = new THREE.Vector3();
@@ -128,7 +124,6 @@ function FilmScene({
   const laptopMaterials = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
   const phoneMaterials = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
   const settledRef = useRef(0);
-  const [settled, setSettled] = useState(0);
 
   const laptopTextures = useScreenTextures(LAPTOP_SCREENS);
   const phoneTextures = useScreenTextures(PHONE_SCREENS);
@@ -154,16 +149,10 @@ function FilmScene({
     const capture = clamp(film.phone.rotation / (Math.PI * 2));
     const captureScreens = clamp(film.phone.screen);
     const settle = clamp(film.coin.settled);
+    const activeDevice = film.activeDevice;
+    const rise = clamp(capture / PHONE_RISE_SPAN);
 
-    if (
-      next.coin.settled !== settledRef.current &&
-      (Math.abs(next.coin.settled - settledRef.current) >= 0.02 ||
-        next.coin.settled === 0 ||
-        next.coin.settled === 1)
-    ) {
-      settledRef.current = next.coin.settled;
-      setSettled(next.coin.settled);
-    }
+    settledRef.current = next.coin.settled;
 
     const orbit = orbitRef.current;
     if (!draggingRef.current) {
@@ -211,18 +200,23 @@ function FilmScene({
 
     const laptop = laptopRef.current;
     if (laptop) {
+      const handoff = compact && activeDevice === "phone" ? rise : 0;
       laptop.position.set(
         -0.65 * capture - 1.9 * settle,
-        THREE.MathUtils.lerp(LAPTOP_HIDDEN_Y, LAPTOP_GROUND_Y, plan),
+        THREE.MathUtils.lerp(LAPTOP_HIDDEN_Y, LAPTOP_GROUND_Y, plan) -
+          COMPACT_LAPTOP_SINK * handoff,
         -0.55 * capture - 26 * settle
       );
       laptop.rotation.y = -0.08 * capture - 0.12 * settle;
-      laptop.visible = plan > 0.001 && settle < FOG_HIDDEN_SETTLE;
+      laptop.visible = compact
+        ? activeDevice === "laptop" ||
+          (activeDevice === "phone" &&
+            handoff < COMPACT_LAPTOP_HANDOFF_END)
+        : plan > 0.001 && settle < FOG_HIDDEN_SETTLE;
     }
 
     const phone = phoneRef.current;
     if (phone) {
-      const rise = clamp(capture / PHONE_RISE_SPAN);
       phone.position.set(
         0.22 - 0.9 * settle,
         THREE.MathUtils.lerp(PHONE_HIDDEN_Y, PHONE_REST_Y, rise) +
@@ -230,13 +224,16 @@ function FilmScene({
         THREE.MathUtils.lerp(1.45, 2.15, capture) - 28 * settle
       );
       phone.scale.setScalar(1 - 0.35 * settle);
-      phone.visible = rise > 0.001 && settle < FOG_HIDDEN_SETTLE;
+      phone.visible = compact
+        ? activeDevice === "phone" ||
+          (activeDevice === null && settle < FOG_HIDDEN_SETTLE)
+        : rise > 0.001 && settle < FOG_HIDDEN_SETTLE;
     }
   });
 
   return (
     <>
-      <StudioEnvironment settled={settled} />
+      <StudioEnvironment settledRef={settledRef} />
       <group scale={compact ? COMPACT_STAGE_SCALE : 1}>
         <group ref={coinRef}>
           <MachinedCoin state={film.coin} compact={compact} />
@@ -282,7 +279,7 @@ export default function ProductFilmCanvas({
   const dragging = useRef(false);
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (reduce) {
+    if (reduce || !event.isPrimary || event.button !== 0) {
       return;
     }
     const target = event.target;
@@ -297,7 +294,12 @@ export default function ProductFilmCanvas({
       azimuth: orbit.current.azimuth,
       elevation: orbit.current.elevation
     };
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      dragging.current = false;
+      drag.current = null;
+    }
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -339,6 +341,7 @@ export default function ProductFilmCanvas({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerEnd}
       onPointerCancel={handlePointerEnd}
+      onLostPointerCapture={handlePointerEnd}
     >
       <Canvas
         dpr={[1, compact ? 1.25 : 1.5]}
