@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { coinSegmentAngles } from "@/three/product-film/coin";
 import {
   clampOrbit,
   getProductFilmState,
@@ -22,5 +23,12 @@ describe("product-film motion", () => {
   it("makes neighboring screenshot opacities complementary", () => {
     const values = screenCrossfade(1.2, 3, 0.35);
     expect(values[1]! + values[2]!).toBeCloseTo(1, 5);
+  });
+
+  it("partitions a complete coin into four non-overlapping arcs", () => {
+    const arcs = coinSegmentAngles([0.4, 0.25, 0.2, 0.15]);
+    expect(arcs).toHaveLength(4);
+    expect(arcs[0]!.start).toBeCloseTo(0);
+    expect(arcs.at(-1)?.end).toBeCloseTo(Math.PI * 2);
   });
 });
