@@ -6,11 +6,7 @@ export function ContextReleaser() {
 
   useEffect(() => {
     return () => {
-      const context = gl.getContext();
       gl.dispose();
-      if (context && !context.isContextLost()) {
-        gl.forceContextLoss();
-      }
     };
   }, [gl]);
 

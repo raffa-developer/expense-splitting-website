@@ -1,28 +1,6 @@
 import { useEffect, useState } from "react";
 import * as THREE from "three";
 
-export function configureWindow(
-  texture: THREE.Texture,
-  planeAspect: number
-): number {
-  const image = texture.image as { width?: number; height?: number } | undefined;
-  const width = image?.width ?? 1;
-  const height = image?.height ?? 1;
-  const textureAspect = width / height;
-  texture.wrapS = THREE.ClampToEdgeWrapping;
-  texture.wrapT = THREE.ClampToEdgeWrapping;
-  if (textureAspect > planeAspect) {
-    const repeatX = planeAspect / textureAspect;
-    texture.repeat.set(repeatX, 1);
-    texture.offset.set((1 - repeatX) / 2, 0);
-    return 0;
-  }
-  const repeatY = textureAspect / planeAspect;
-  texture.repeat.set(1, repeatY);
-  texture.offset.set(0, 0);
-  return 1 - repeatY;
-}
-
 export function createLinearTexture(
   inner: string,
   outer: string
@@ -130,22 +108,3 @@ export function useScreenTextures(
   return textures;
 }
 
-export function screenOpacity(delta: number, fade: number): number {
-  const value = (1 - Math.abs(delta)) / fade;
-  return Math.min(1, Math.max(0, value));
-}
-
-export function screenFadeThrough(
-  delta: number,
-  hold = 0.85,
-  fade = 0.12
-): number {
-  const distance = Math.abs(delta);
-  if (distance <= hold - fade) {
-    return 1;
-  }
-  if (distance >= hold + fade) {
-    return 0;
-  }
-  return (hold + fade - distance) / (2 * fade);
-}

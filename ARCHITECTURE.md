@@ -31,6 +31,7 @@ Verification).
 | `src/App.tsx` | Page composition and the global scroll progress bar |
 | `src/components/product-film-act.tsx` | The film act: hero, captions, canvas gating, error boundary |
 | `src/components/product-film-fallback.tsx` | Labelled screenshot figure plus `StaticCoin` |
+| `src/components/mechanics.tsx` | The split-types section |
 | `src/components/*-section.tsx` | The remaining page acts |
 | `src/components/nav.tsx`, `footer.tsx` | Chrome, language toggle, GitHub link |
 | `src/components/static-coin.tsx` | SVG coin used when WebGL is unavailable |
@@ -46,9 +47,9 @@ Verification).
 | `src/three/product-film/laptop.tsx` | `StudioLaptop` plus shared rounded-geometry helpers |
 | `src/three/product-film/phone.tsx` | `StudioPhone` |
 | `src/three/product-film/studio.tsx` | Studio floor, fog, lights, procedural environment map |
-| `src/three/textures.ts` | Screenshot loader, crop fitting, procedural gradient textures |
-| `src/three/context-releaser.tsx` | Forces WebGL context loss when the canvas unmounts |
-| `src/assets/screens/` | App screenshots: three desktop, three mobile |
+| `src/three/textures.ts` | Screenshot loader and procedural gradient textures |
+| `src/three/context-releaser.tsx` | Disposes the renderer when the canvas unmounts; R3F releases the WebGL context itself |
+| `src/assets/screens/` | App screenshots: desktop dashboard, group and expenses; mobile dashboard, group and expenses |
 
 ## Page composition
 
@@ -103,17 +104,19 @@ The page renders a single `<Canvas>`, gated by `showCanvas = webgl && near`:
 - `useInRange(section, 1.1, 0)` mounts the canvas just before the section enters the
   viewport and unmounts it as soon as the section leaves, so scrolling past the film
   releases its context.
-- `ContextReleaser` sits inside the canvas and calls `gl.dispose()` plus
-  `forceContextLoss()` on unmount, so the next mount starts with a clean driver state
-  instead of waiting on garbage collection.
+- `ContextReleaser` sits inside the canvas and calls `gl.dispose()` on unmount; R3F's
+  own unmount path then forces context loss (`forceContextLoss` on a 500 ms timeout),
+  so the next mount starts with a clean driver state. The app does not force loss
+  itself, which avoids a duplicate `loseContext` call on an already-lost context.
 - `FilmCanvasBoundary` catches render errors, logs them, and swaps in the same
   fallback; `Suspense` covers the lazy canvas chunk with it too.
 - `DprGuard` uses drei's `PerformanceMonitor`: pixel ratio drops to 1 on decline and
   is capped at 1.5 (1.25 compact) on incline.
 
 `useMediaQuery("(min-width: 900px)")` decides between the wide layout and the compact
-one. Compact viewports render the fallback whenever the canvas is not mounted; wide
-viewports render it only when WebGL is unavailable or the canvas failed.
+one. The fallback mounts whenever `showCanvas` is false — no WebGL, a canvas error, or
+the section simply out of range — as the wide figure at 900px and above, or the
+compact figure in the stage area below it.
 
 ## The product film
 
@@ -140,8 +143,9 @@ is true.
   `railScale` (0.3 compact): `push = share*0.3 + plan*0.5 + screens*0.25 - settle*0.75`;
   focus height is 0.85 wide / 0.42 compact. `camera.z` stays 6.5 and the push moves
   the camera toward the focus.
-- `screenCrossfade(position, count, fade)` returns complementary opacities, so one
-  screenshot is always at full strength with no black gap.
+- `screenCrossfade(position, count, fade)` returns complementary opacities: the two
+  neighbouring screens always sum to 1 and the rest are 0, so transitions show no
+  black gap and no double exposure.
 
 ### Procedural models
 
@@ -192,10 +196,11 @@ is pinned to 1, the hero stays in place, and the final `film.settle` caption is 
 `opacity: 1` while the others stay hidden. The canvas still mounts when WebGL and range
 allow, rendering the settled film state from `getProductFilmState(..., reduce=true)`.
 
-Without WebGL, `ProductFilmFallback` shows a labelled `figure`: the `figcaption` names
-the device, the app screenshot sits in a framed card, `StaticCoin` stands beside it,
-and the hero copy and CTAs stay visible. The same fallback covers a canvas that throws
-or fails to load.
+Without WebGL, `ProductFilmFallback` shows a labelled `figure`: the `figcaption` is
+the matching film chapter line (`film.laptop` wide, `film.phone` compact), the app
+screenshot sits in a framed card, `StaticCoin` stands beside it, and the hero copy and
+CTAs stay visible. The same fallback covers a canvas that throws or fails to load, and
+it also mounts on wide viewports whenever the canvas is out of range.
 
 ## Copy and language
 
@@ -211,7 +216,8 @@ stored. `t("key")` supports `{name}` interpolation.
 Tailwind v4 reads its configuration from CSS. `src/index.css` declares the palette as
 CSS variables on `:root`, exposes them to utilities in `@theme inline` (`--color-pine`
 becomes `bg-pine`, `text-pine`, and so on), and defines two custom utilities:
-`grid-backdrop` for the hero grid, `money` for tabular monospace numerals.
+`stage-vignette` for the stage edge falloff, `money` for tabular monospace numerals.
+The hero glow is an inline radial gradient in `product-film-act.tsx`.
 
 | Token | Value | Use |
 | --- | --- | --- |

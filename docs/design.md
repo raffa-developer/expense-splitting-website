@@ -54,26 +54,28 @@ Type: Gabarito (display), Karla (body), DM Mono (numbers, labels).
 
 ## 3D implementation
 
-Coin: procedural geometry (cylinder plus extruded pie slices, standard PBR
-materials, small custom light rig, no HDR assets). Devices: downloaded glTF
-models rendered with `useGLTF`, with the app screenshots drawn onto planes
-attached to each model's display mesh:
+One procedural canvas carries the whole scroll story. The only downloaded
+assets are the app screenshots; no model, HDR or environment file is fetched.
+`MachinedCoin` is a lathe-turned shell with four extruded wedge segments
+weighted 40/25/20/15 plus instanced groove ticks and an emissive settle inlay.
+`StudioLaptop` and `StudioPhone` are built from rounded extruded slabs with the
+app screenshots as crossfading screen planes, a glass cover and additive
+reflections. `StudioEnvironment` adds the studio floor, fog, a key/rim/fill
+light rig and a canvas-painted equirectangular environment map. Studio tokens
+live in `STUDIO_PALETTE`: studio black `#080b10`, graphite `#151a22`, porcelain
+`#f2f5f7`, ice blue `#8dbfff`, settle green `#72e1b1`, alloy `#b9c3cd`, cobalt
+`#4f7fd6`, key white `#eef4fb`.
 
-- `public/models/macbook.glb` — "Laptop / MacBook Pro" by Alex Safayan
-  (https://poly.pizza/m/27hcX_w47Jb), CC BY. The lid node is re-parented to a
-  hinge pivot and opens with scroll progress; screen planes cover the display.
-- `public/models/iphone.glb` — "Apple iPhone 15 Pro Max Black" by polyman
-  (https://sketchfab.com/Polyman_3D), CC BY 4.0. Screen planes sit on the front
-  glass; the model also flips to show its back during the close-up.
-
-Both models are simplified on load (small parts dropped, textures capped) to
-keep the GPU budget for the software renderer. Scroll progress drives the
-scenes from `anime.js`'s scroll sync and `useFrame`. One canvas at a time:
-the coin canvas releases when its section leaves, then the device canvas
-mounts, and unmounting always forces the WebGL context loss so the next canvas
-starts clean. Reduced motion renders static; no WebGL falls back to a styled
-hero with the app screenshot. Mobile gets a simplified coin and no device
-scene. Attribution is shown in the footer.
+Scroll progress from `anime.js`'s `onScroll` sync is read inside `useFrame`;
+captions crossfade at progress 0.34 / 0.62 / 0.9. Dragging orbits the camera and
+is clamped to ±10° azimuth and ±5° elevation, easing back to zero at 6/s on
+release. One canvas at a time: it mounts via `useInRange` just before the
+section enters the viewport, unmounts as the section leaves, and unmounting
+disposes the renderer and forces WebGL context loss so the next mount starts
+clean. Reduced motion pins progress to 1 and shows the settle caption. Without
+WebGL, or whenever the canvas is not mounted, the section shows the labelled
+screenshot figure fallback; compact viewports scale the stage down and drop the
+devices per chapter.
 
 ## Configuration
 
