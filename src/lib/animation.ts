@@ -1,5 +1,6 @@
 import { animate, onScroll, utils } from "animejs";
 import { useEffect, useRef, type RefObject } from "react";
+import { useMotion } from "@/lib/motion";
 
 export interface ScrollProgress {
   current: number;
@@ -69,14 +70,13 @@ export function useReveal(
   target: RefObject<HTMLElement | null>,
   delay = 0
 ): void {
+  const { motion } = useMotion();
   useEffect(() => {
     const element = target.current;
     if (!element) {
       return;
     }
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
+    if (!motion) return;
 
     utils.set(element, { opacity: 0, y: 16 });
     const observer = new IntersectionObserver(
@@ -99,7 +99,7 @@ export function useReveal(
     observer.observe(element);
 
     return () => observer.disconnect();
-  }, [target, delay]);
+  }, [target, delay, motion]);
 }
 
 export function clamp(value: number): number {

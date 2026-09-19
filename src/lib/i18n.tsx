@@ -16,6 +16,8 @@ const pt = {
   "nav.tech": "Tecnologia",
   "nav.run": "Correr",
   "nav.github": "GitHub",
+  "nav.motionOn": "Animações ligadas",
+  "nav.motionOff": "Animações desligadas",
 
   "hero.title": "Divide as contas. Mantém a amizade.",
   "hero.body":
@@ -83,6 +85,8 @@ const en: Record<keyof typeof pt, string> = {
   "nav.tech": "Tech",
   "nav.run": "Run it",
   "nav.github": "GitHub",
+  "nav.motionOn": "Animations on",
+  "nav.motionOff": "Animations off",
 
   "hero.title": "Split the bill. Keep the friendship.",
   "hero.body":

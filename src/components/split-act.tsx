@@ -10,13 +10,10 @@ import {
   useScrollProgress
 } from "@/lib/animation";
 import { useInRange, useMediaQuery, supportsWebGL } from "@/lib/use-media";
+import { useMotion } from "@/lib/motion";
 import { DEMO_URL, GITHUB_URL } from "@/lib/site";
 
 const CoinCanvas = lazy(() => import("@/three/coin-scene"));
-
-function usePrefersReducedMotion(): boolean {
-  return useMediaQuery("(prefers-reduced-motion: reduce)");
-}
 
 export function SplitAct() {
   const { t } = useI18n();
@@ -31,7 +28,8 @@ export function SplitAct() {
   const body = useRef<HTMLParagraphElement>(null);
   const cta = useRef<HTMLDivElement>(null);
   const wide = useMediaQuery("(min-width: 900px)");
-  const reduce = usePrefersReducedMotion();
+  const { motion } = useMotion();
+  const reduce = !motion;
   const webgl = useMemo(() => supportsWebGL(), []);
   const coinNear = useInRange(section, 1.1, 0);
   const showCoin = webgl && coinNear;

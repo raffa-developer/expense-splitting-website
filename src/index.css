@@ -139,10 +139,10 @@ html.lenis body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
+  html:not(.motion-forced) {
     scroll-behavior: auto;
   }
-  .scroll-hint-arrow {
+  html:not(.motion-forced) .scroll-hint-arrow {
     animation: none;
   }
 }

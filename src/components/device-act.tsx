@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef } from "react";
 import { useI18n } from "@/lib/i18n";
 import { smoothstep, useScrollProgress } from "@/lib/animation";
 import { supportsWebGL, useInRange, useMediaQuery } from "@/lib/use-media";
+import { useMotion } from "@/lib/motion";
 import { screenOpacity } from "@/three/textures";
 import overview from "@/assets/screens/desktop-group.png";
 
@@ -19,7 +20,8 @@ export function DeviceAct() {
     useRef<HTMLParagraphElement>(null)
   ];
   const wide = useMediaQuery("(min-width: 900px)");
-  const reduce = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const { motion } = useMotion();
+  const reduce = !motion;
   const webgl = useMemo(() => supportsWebGL(), []);
   const deviceNear = useInRange(section, -0.12, -0.3);
   const canRenderDevice = webgl;
