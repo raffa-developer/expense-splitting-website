@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { coinSegmentAngles } from "@/three/product-film/coin";
+import { applyScreenOpacities } from "@/three/product-film/laptop";
 import {
   clampOrbit,
   getProductFilmState,
@@ -30,5 +31,11 @@ describe("product-film motion", () => {
     expect(arcs).toHaveLength(4);
     expect(arcs[0]!.start).toBeCloseTo(0);
     expect(arcs.at(-1)?.end).toBeCloseTo(Math.PI * 2);
+  });
+
+  it("writes no opacity outside the zero-to-one range", () => {
+    const target = [{ opacity: 0 }, { opacity: 0 }];
+    applyScreenOpacities(target, [1.2, -0.2]);
+    expect(target).toEqual([{ opacity: 1 }, { opacity: 0 }]);
   });
 });
