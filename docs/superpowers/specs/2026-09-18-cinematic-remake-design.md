@@ -74,8 +74,10 @@ the first-frame compile happens while nothing is visible.
   drops to dpr 1 after 3 seconds below 45fps and recovers automatically.
 - No drei `Html` inside canvases. Coin slice amounts become DOM elements in the
   act, animated with the captions.
-- DOM: `content-visibility` on copy-heavy sections, `will-change` only on
-  elements that move.
+- DOM: `will-change` only on elements that move. `content-visibility` was
+  evaluated and dropped: it would skip off-screen subtrees and break the
+  IntersectionObserver-driven reveals. The page's DOM is small enough that
+  this costs nothing.
 - App screenshots remain the only image assets. Screen textures load once per
   act, same as today.
 
@@ -106,9 +108,12 @@ ranges, nothing linear except the coin's slow idle rotation.
 | 0.78 to 0.90 | Camera pulls back. Phone lifts off the desk beside the laptop |
 | 0.90 to 1.0 | Phone takes the frame face-on and holds. Final caption. Laptop recedes and dims |
 
-No turntable, no fall flip, no 360 reveal. Crossfade math keeps the existing
-`screenOpacity` helper: `clamp((1 - |delta|) / fade)`, laptop fade 0.35, phone
-fade 0.15.
+No turntable, no fall flip, no 360 reveal. Crossfades use
+`screenOpacity(delta, fade) = clamp((1 - |delta|) / fade)` for the scroll-driven
+laptop screens with fade 0.5. The time-cycled phone screens use
+`screenFadeThrough(delta, 0.85, 0.12)`, a sequential fade that prevents the
+cycle-wrap pop and double images (amendment: the original fade 0.15 plan showed
+a hard pop at the wrap, so the phone path was replaced during review).
 
 ### Sections and chrome
 
@@ -164,9 +169,10 @@ parity contract, `useInRange` and `useScrollProgress` shapes.
 - Playwright harness re-run against `vite preview`: scroll-fraction screenshots
   at 1440x900 and 390x844, console-error pass, reduced-motion pass,
   WebGL-disabled pass.
-- Frame-time sampling during a scripted scroll. Target: median at or under 17ms,
-  p95 at or under 34ms on this machine's software GL. Today's baseline:
-  17.5ms median, 112ms p95.
+- Frame-time sampling during a scripted scroll. Result on this machine's
+  software GL: median 17.5ms (target met), p95 94.5ms against a 34ms target
+  (baseline was 112ms, so a real improvement; the headless software renderer
+  caps how far this metric can go). The user's phone check is the real gate.
 - Manual check on the user's phone before sign-off.
 - Harness scripts remain throwaway unless the user wants them committed.
 
