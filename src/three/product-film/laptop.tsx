@@ -3,6 +3,7 @@ import { RoundedBox } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import type { RefObject } from "react";
 import * as THREE from "three";
+import { toCreasedNormals } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { clamp } from "@/lib/animation";
 import {
   screenCrossfade,
@@ -60,7 +61,10 @@ const KEY_H = 0.012;
 const TRACKPAD_W = 1.18;
 const TRACKPAD_D = 0.74;
 const TRACKPAD_Z = 0.66;
-const TRACKPAD_Y = DECK_Y - 0.001;
+const TRACKPAD_T = 0.012;
+const TRACKPAD_Y = DECK_Y - TRACKPAD_T / 2;
+
+const SLAB_CREASE_ANGLE = Math.PI / 6;
 
 const shellMaterial = new THREE.MeshPhysicalMaterial({
   color: DEVICE_TOKENS.graphite,
@@ -97,7 +101,10 @@ const trackpadMaterial = new THREE.MeshPhysicalMaterial({
   roughness: 0.26,
   clearcoat: 0.7,
   clearcoatRoughness: 0.28,
-  envMapIntensity: 1.2
+  envMapIntensity: 1.2,
+  polygonOffset: true,
+  polygonOffsetFactor: -1,
+  polygonOffsetUnits: -2
 });
 
 const bezelMaterial = new THREE.MeshPhysicalMaterial({
@@ -180,6 +187,31 @@ export function createRoundedScreenGeometry(
   );
 }
 
+function extrudeRoundedSlab(
+  shape: THREE.Shape,
+  thickness: number,
+  bevel: number,
+  curveSegments: number
+): THREE.ExtrudeGeometry {
+  const safeBevel = Math.max(
+    0.0005,
+    Math.min(bevel, thickness / 2 - 0.0005)
+  );
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: thickness - safeBevel * 2,
+    steps: 1,
+    bevelEnabled: true,
+    bevelThickness: safeBevel,
+    bevelSize: safeBevel,
+    bevelOffset: 0,
+    bevelSegments: 2,
+    curveSegments
+  });
+  geometry.center();
+  toCreasedNormals(geometry, SLAB_CREASE_ANGLE);
+  return geometry;
+}
+
 export function createRoundedSlabGeometry(
   width: number,
   height: number,
@@ -188,26 +220,28 @@ export function createRoundedSlabGeometry(
   bevel = 0.002,
   curveSegments = 8
 ): THREE.ExtrudeGeometry {
-  const safeBevel = Math.max(
-    0.0005,
-    Math.min(bevel, thickness / 2 - 0.0005)
-  );
-  const geometry = new THREE.ExtrudeGeometry(
+  return extrudeRoundedSlab(
     createRoundedShape(width, height, radius),
-    {
-      depth: thickness - safeBevel * 2,
-      steps: 1,
-      bevelEnabled: true,
-      bevelThickness: safeBevel,
-      bevelSize: safeBevel,
-      bevelOffset: 0,
-      bevelSegments: 2,
-      curveSegments
-    }
+    thickness,
+    bevel,
+    curveSegments
   );
-  geometry.center();
-  geometry.computeVertexNormals();
-  return geometry;
+}
+
+export function createRoundedRingGeometry(
+  width: number,
+  height: number,
+  radius: number,
+  holeWidth: number,
+  holeHeight: number,
+  holeRadius: number,
+  thickness: number,
+  bevel = 0.002,
+  curveSegments = 8
+): THREE.ExtrudeGeometry {
+  const shape = createRoundedShape(width, height, radius);
+  shape.holes.push(createRoundedShape(holeWidth, holeHeight, holeRadius));
+  return extrudeRoundedSlab(shape, thickness, bevel, curveSegments);
 }
 
 function createKeyMatrices(compact: boolean): THREE.Matrix4[] {
@@ -295,7 +329,7 @@ export function StudioLaptop({
         TRACKPAD_W,
         TRACKPAD_D,
         0.03,
-        0.01,
+        TRACKPAD_T,
         0.003,
         compact ? 5 : 8
       ),

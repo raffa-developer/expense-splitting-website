@@ -11,6 +11,7 @@ import { createLinearTexture } from "@/three/textures";
 import {
   DEVICE_TOKENS,
   applyScreenOpacities,
+  createRoundedRingGeometry,
   createRoundedScreenGeometry,
   createRoundedSlabGeometry
 } from "./laptop";
@@ -19,22 +20,25 @@ const BODY_W = 0.84;
 const BODY_H = 1.74;
 const BODY_T = 0.1;
 const BODY_RADIUS = 0.12;
+const WINDOW_W = BODY_W - 0.04;
+const WINDOW_H = BODY_H - 0.04;
+const WINDOW_RADIUS = BODY_RADIUS - 0.02;
 
 const PANEL_W = BODY_W - 0.05;
 const PANEL_H = BODY_H - 0.05;
-const PANEL_T = 0.016;
-const FRONT_PANEL_Z = 0.044;
-const BACK_T = 0.014;
-const BACK_PANEL_Z = -0.046;
+const PANEL_T = 0.014;
+const FRONT_PANEL_Z = 0.038;
+const BACK_T = 0.012;
+const BACK_PANEL_Z = -0.044;
 
 const SCREEN_W = 0.7;
 const SCREEN_H = 1.515;
 const SCREEN_RADIUS = 0.075;
 const SCREEN_FADE = 0.7;
-const SCREEN_STAGGER = 0.0005;
-const SCREEN_Z = 0.0545;
-const COVER_Z = 0.0585;
-const REFLECTION_Z = 0.0595;
+const SCREEN_STAGGER = 0.0004;
+const SCREEN_Z = 0.0462;
+const COVER_Z = 0.0485;
+const REFLECTION_Z = 0.049;
 
 const ISLAND_X = -0.17;
 const ISLAND_Y = 0.54;
@@ -132,7 +136,7 @@ const buttonMaterial = new THREE.MeshPhysicalMaterial({
 
 export function phoneScreenVisibility(rotation: number): number {
   const angle = Math.abs(Math.atan2(Math.sin(rotation), Math.cos(rotation)));
-  return 1 - smoothstep(0.26, 0.55, angle);
+  return 1 - smoothstep(0.2, 0.35, angle);
 }
 
 export interface StudioPhoneProps {
@@ -165,10 +169,13 @@ export function StudioPhone({
 
   const bodyGeometry = useMemo(
     () =>
-      createRoundedSlabGeometry(
+      createRoundedRingGeometry(
         BODY_W,
         BODY_H,
         BODY_RADIUS,
+        WINDOW_W,
+        WINDOW_H,
+        WINDOW_RADIUS,
         BODY_T,
         0.005,
         compact ? 5 : 8
@@ -372,7 +379,9 @@ export function StudioPhone({
                   LENS_RADIUS,
                   LENS_RADIUS,
                   LENS_RING_T,
-                  compact ? 16 : 28
+                  compact ? 16 : 28,
+                  1,
+                  true
                 ]}
               />
             </mesh>
