@@ -5,6 +5,7 @@ import { STUDIO_PALETTE } from "@/three/product-film/studio";
 import {
   clampOrbit,
   getProductFilmState,
+  productFilmCaptionKey,
   screenCrossfade
 } from "./product-film-motion";
 
@@ -20,6 +21,13 @@ describe("product-film motion", () => {
     const phone = getProductFilmState(0.7, false, false);
     expect(laptop.activeDevice).toBe("laptop");
     expect(phone.activeDevice).toBe("phone");
+  });
+
+  it("selects a caption for every film chapter", () => {
+    expect(productFilmCaptionKey(0.1)).toBe("film.share");
+    expect(productFilmCaptionKey(0.4)).toBe("film.laptop");
+    expect(productFilmCaptionKey(0.7)).toBe("film.phone");
+    expect(productFilmCaptionKey(0.95)).toBe("film.settle");
   });
 
   it("constrains drag orbit to the composed camera limits", () => {

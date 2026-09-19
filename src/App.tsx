@@ -1,11 +1,10 @@
 import { useRef } from "react";
-import { DeviceAct } from "@/components/device-act";
 import { Footer } from "@/components/footer";
 import { Mechanics } from "@/components/mechanics";
 import { Nav } from "@/components/nav";
+import { ProductFilmAct } from "@/components/product-film-act";
 import { RunSection } from "@/components/run-section";
 import { SettleSection } from "@/components/settle-section";
-import { SplitAct } from "@/components/split-act";
 import { TechSection } from "@/components/tech-section";
 import { useGlobalScrollProgress } from "@/lib/animation";
 import { useLenis } from "@/lib/lenis";
@@ -24,9 +23,8 @@ export function App() {
       />
       <Nav />
       <main>
-        <SplitAct />
+        <ProductFilmAct />
         <Mechanics />
-        <DeviceAct />
         <SettleSection />
         <TechSection />
         <RunSection />

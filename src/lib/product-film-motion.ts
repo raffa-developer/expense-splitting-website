@@ -4,6 +4,27 @@ export type Orbit = { azimuth: number; elevation: number };
 
 export type ActiveDevice = "laptop" | "phone" | null;
 
+export type FilmCaptionKey =
+  | "film.share"
+  | "film.laptop"
+  | "film.phone"
+  | "film.settle";
+
+export const PRODUCT_FILM_CAPTION_EDGES = [0.34, 0.62, 0.9] as const;
+
+export function productFilmCaptionKey(progress: number): FilmCaptionKey {
+  if (progress < PRODUCT_FILM_CAPTION_EDGES[0]) {
+    return "film.share";
+  }
+  if (progress < PRODUCT_FILM_CAPTION_EDGES[1]) {
+    return "film.laptop";
+  }
+  if (progress < PRODUCT_FILM_CAPTION_EDGES[2]) {
+    return "film.phone";
+  }
+  return "film.settle";
+}
+
 export interface ProductFilmState {
   activeDevice: ActiveDevice;
   coin: {

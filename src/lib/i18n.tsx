@@ -37,6 +37,11 @@ const pt = {
   "split.share4": "10,00 €",
   "split.share5": "10,00 €",
 
+  "film.share": "A conta dividida em partes exatas.",
+  "film.laptop": "Planeia em conjunto no painel do grupo.",
+  "film.phone": "Regista despesas onde estiveres.",
+  "film.settle": "Os saldos acertam a zero.",
+
   "mechanics.title": "Simples por fora, exato por dentro.",
   "mechanics.split.title": "Quatro formas de dividir",
   "mechanics.split.body":
@@ -105,6 +110,11 @@ const en: Record<keyof typeof pt, string> = {
   "split.share3": "15,00 €",
   "split.share4": "10,00 €",
   "split.share5": "10,00 €",
+
+  "film.share": "The bill, split into exact shares.",
+  "film.laptop": "Plan together on the group dashboard.",
+  "film.phone": "Add expenses from anywhere.",
+  "film.settle": "Balances settle back to zero.",
 
   "mechanics.title": "Simple outside, exact inside.",
   "mechanics.split.title": "Four ways to split",
