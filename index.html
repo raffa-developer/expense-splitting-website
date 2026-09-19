@@ -7,8 +7,26 @@
       name="description"
       content="Divide despesas com amigos, mantém as contas exatas e acerta tudo com o mínimo de transferências."
     />
-    <meta name="theme-color" content="#120f0d" />
+    <meta name="theme-color" content="#f6f1ea" />
     <title>Expense Splitting — Divide as contas. Mantém a amizade.</title>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("expense-splitting-theme");
+          var dark =
+            stored === "dark" ||
+            ((stored === null || stored === "system") &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          var root = document.documentElement;
+          root.classList.toggle("dark", dark);
+          root.style.colorScheme = dark ? "dark" : "light";
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute("content", dark ? "#171310" : "#f6f1ea");
+          }
+        } catch (error) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

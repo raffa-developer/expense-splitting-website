@@ -1,5 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type MouseEvent } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useI18n } from "@/lib/i18n";
+import { scrollToSection } from "@/lib/lenis";
 import { GITHUB_URL } from "@/lib/site";
 
 export function GithubMark({ className = "size-4" }: { className?: string }) {
@@ -38,11 +40,20 @@ export function Nav() {
   }, []);
 
   const links = [
-    { href: "#how", label: t("nav.how") },
-    { href: "#app", label: t("nav.app") },
-    { href: "#tech", label: t("nav.tech") },
-    { href: "#run", label: t("nav.run") }
+    { id: "how", label: t("nav.how") },
+    { id: "app", label: t("nav.app") },
+    { id: "tech", label: t("nav.tech") },
+    { id: "run", label: t("nav.run") }
   ];
+
+  const goTo = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
+    const target = document.getElementById(id);
+    if (!target) {
+      return;
+    }
+    event.preventDefault();
+    scrollToSection(target);
+  };
 
   return (
     <header
@@ -52,6 +63,7 @@ export function Nav() {
       <div className="mx-auto flex max-w-6xl items-center gap-6 px-6">
         <a
           href="#top"
+          onClick={(event) => goTo(event, "top")}
           className="font-display text-[15px] font-bold tracking-tight"
         >
           Expense<span className="text-apricot">.</span>Splitting
@@ -59,8 +71,9 @@ export function Nav() {
         <nav className="ml-auto hidden items-center gap-6 text-sm text-muted md:flex">
           {links.map((link) => (
             <a
-              key={link.href}
-              href={link.href}
+              key={link.id}
+              href={`#${link.id}`}
+              onClick={(event) => goTo(event, link.id)}
               className="transition-colors hover:text-ink"
             >
               {link.label}
@@ -84,12 +97,13 @@ export function Nav() {
               </button>
             ))}
           </div>
+          <ThemeToggle />
           <a
             href={GITHUB_URL}
             target="_blank"
             rel="noreferrer"
             aria-label="GitHub"
-            className="flex size-9 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-white/25 hover:text-ink"
+            className="flex size-9 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-line-strong hover:text-ink"
           >
             <GithubMark />
           </a>
