@@ -36,9 +36,9 @@ const HINGE_Y = DECK_Y + LID_T / 2 + 0.004;
 const HINGE_BARRELS = [-1.06, 0, 1.06];
 const HINGE_BARREL_LENGTH = 0.9;
 
-const SCREEN_W = 2.5;
-const SCREEN_H = 1.7;
-const SCREEN_RADIUS = 0.06;
+const SCREEN_W = 3.08;
+const SCREEN_H = 1.96;
+const SCREEN_RADIUS = 0.07;
 const SCREEN_FADE = 0.5;
 const SCREEN_STAGGER = 0.0006;
 
