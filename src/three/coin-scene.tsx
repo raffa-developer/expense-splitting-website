@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
 import { PhoneModel, PHONE_SCREEN_TEXTURE } from "@/three/phone";
 import { ProceduralEnvironment } from "@/three/environment";
@@ -32,6 +33,20 @@ const SEGMENTS = [
 function smoothstep(edge0: number, edge1: number, value: number): number {
   const t = Math.min(1, Math.max(0, (value - edge0) / (edge1 - edge0)));
   return t * t * (3 - 2 * t);
+}
+
+function DprGuard({ compact }: { compact: boolean }) {
+  const gl = useThree((state) => state.gl);
+  return (
+    <PerformanceMonitor
+      onDecline={() => gl.setPixelRatio(1)}
+      onIncline={() =>
+        gl.setPixelRatio(Math.min(compact ? 1.5 : 2, window.devicePixelRatio || 1))
+      }
+    >
+      <></>
+    </PerformanceMonitor>
+  );
 }
 
 function wedgeGeometry(start: number, end: number): THREE.ExtrudeGeometry {
@@ -83,12 +98,14 @@ function Coin({
   progress,
   offsetX,
   offsetY,
-  scale
+  scale,
+  reduce
 }: {
   progress: ScrollProgress;
   offsetX: number;
   offsetY: number;
   scale: number;
+  reduce: boolean;
 }) {
   const root = useRef<THREE.Group>(null);
   const assembled = useRef<THREE.Group>(null);
@@ -110,21 +127,21 @@ function Coin({
 
   useFrame((state) => {
     const value = progress.current;
-    const time = state.clock.elapsedTime;
+    const t = reduce ? 0 : state.clock.elapsedTime;
     const explode = smoothstep(0.34, 0.95, value);
     const intro = smoothstep(0, 0.32, value);
     const pointer = state.pointer;
 
     if (root.current) {
       root.current.position.x = offsetX;
-      root.current.position.y = offsetY + Math.sin(time * 0.4) * 0.045;
+      root.current.position.y = offsetY + Math.sin(t * 0.4) * 0.045;
       root.current.rotation.x = THREE.MathUtils.lerp(
         root.current.rotation.x,
         pointer.y * 0.09 - 0.03,
         0.05
       );
-      root.current.rotation.y = time * 0.12 + value * 0.9;
-      root.current.rotation.z = Math.sin(time * 0.12) * 0.04;
+      root.current.rotation.y = t * 0.12 + value * 0.9;
+      root.current.rotation.z = Math.sin(t * 0.12) * 0.04;
       root.current.scale.setScalar(scale);
     }
 
@@ -210,10 +227,12 @@ function Coin({
 
 function HeroPhone({
   progress,
-  compact
+  compact,
+  reduce
 }: {
   progress: ScrollProgress;
   compact: boolean;
+  reduce: boolean;
 }) {
   const textures = useScreenTextures(PHONE_SCREENS, PHONE_SCREEN_TEXTURE);
   const materials = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
@@ -229,11 +248,11 @@ function HeroPhone({
 
   useFrame((state) => {
     const value = progress.current;
-    const time = state.clock.elapsedTime;
+    const t = reduce ? 0 : state.clock.elapsedTime;
     const exit = smoothstep(0.15, 0.5, value);
     const enter = smoothstep(0, 0.22, value);
     const count = PHONE_SCREENS.length;
-    const raw = (((time / 5.5 - 0.1) % count) + count) % count;
+    const raw = (((t / 5.5 - 0.1) % count) + count) % count;
     const deltaFor = (index: number): number => {
       let delta = raw - index;
       if (delta > count / 2) {
@@ -254,12 +273,12 @@ function HeroPhone({
 
     if (root.current) {
       root.current.position.y =
-        baseY - exit * 1.7 + Math.sin(time * 0.9) * 0.05 * (1 - exit);
+        baseY - exit * 1.7 + Math.sin(t * 0.9) * 0.05 * (1 - exit);
       root.current.rotation.z = -0.05 + value * 0.06;
       root.current.rotation.y =
         baseTilt +
         (1 - enter) * -0.95 +
-        Math.sin(time * 0.4) * 0.04;
+        Math.sin(t * 0.4) * 0.04;
       root.current.scale.setScalar(baseScale * (1 - exit * 0.3));
     }
   });
@@ -328,17 +347,19 @@ export default function CoinCanvas({
   offsetX = 0,
   offsetY = 0,
   scale = 1,
-  compact = false
+  compact = false,
+  reduce = false
 }: {
   progress: ScrollProgress;
   offsetX?: number;
   offsetY?: number;
   scale?: number;
   compact?: boolean;
+  reduce?: boolean;
 }) {
   return (
     <Canvas
-      dpr={[1, 1.75]}
+      dpr={compact ? [1, 1.5] : [1, 2]}
       gl={{ antialias: true, alpha: true }}
       camera={{ position: [0, -0.25, 2.9], fov: 35 }}
       fallback={
@@ -349,6 +370,7 @@ export default function CoinCanvas({
     >
       <ContextReleaser />
       <ProceduralEnvironment />
+      <DprGuard compact={compact} />
       <ambientLight intensity={0.35} />
       <SceneLights progress={progress} />
       <pointLight position={[4, 1, 2]} intensity={1.6} color="#ff9e72" />
@@ -357,8 +379,11 @@ export default function CoinCanvas({
         offsetX={offsetX}
         offsetY={offsetY}
         scale={scale}
+        reduce={reduce}
       />
-      {compact ? null : <HeroPhone progress={progress} compact={false} />}
+      {compact ? null : (
+        <HeroPhone progress={progress} compact={false} reduce={reduce} />
+      )}
     </Canvas>
   );
 }

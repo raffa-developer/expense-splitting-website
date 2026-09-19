@@ -87,7 +87,7 @@ export function DeviceAct() {
           <div className="relative mt-6 h-[74vh] min-h-80">
             {showDevice ? (
               <Suspense fallback={null}>
-                <DeviceCanvas progress={progress} />
+                <DeviceCanvas progress={progress} reduce={reduce} />
               </Suspense>
             ) : canRenderDevice ? null : (
               <div

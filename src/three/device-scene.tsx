@@ -56,7 +56,13 @@ function DprGuard() {
   );
 }
 
-function Devices({ progress }: { progress: ScrollProgress }) {
+function Devices({
+  progress,
+  reduce
+}: {
+  progress: ScrollProgress;
+  reduce: boolean;
+}) {
   const root = useRef<THREE.Group>(null);
   const lid = useRef<THREE.Group | null>(null);
   const glow = useRef<THREE.MeshBasicMaterial | null>(null);
@@ -74,6 +80,7 @@ function Devices({ progress }: { progress: ScrollProgress }) {
   useFrame((state) => {
     const value = progress.current;
     const time = state.clock.elapsedTime;
+    const t = reduce ? 0 : time;
     const pointer = state.pointer;
 
     const enter = smoothstep(0.02, 0.14, value);
@@ -82,7 +89,7 @@ function Devices({ progress }: { progress: ScrollProgress }) {
     const pullBack = smoothstep(0.78, 0.9, value);
     const phoneIn = smoothstep(0.78, 0.9, value);
     const screen = smoothstep(0.52, 0.78, value) * 3;
-    const phoneScreen = (time / 6) % PHONE_SCREENS.length;
+    const phoneScreen = (t / 6) % PHONE_SCREENS.length;
 
     screenMaterials.current.forEach((material, index) => {
       if (material) {
@@ -110,14 +117,14 @@ function Devices({ progress }: { progress: ScrollProgress }) {
         0.05
       );
       root.current.position.y =
-        -1.2 * (1 - enter) + Math.sin(time * 0.4) * 0.015;
+        -1.2 * (1 - enter) + Math.sin(t * 0.4) * 0.015;
       root.current.rotation.y = pointerY.current;
     }
     if (lid.current) {
       lid.current.rotation.x = THREE.MathUtils.lerp(1.57, -0.15, open);
     }
     if (glow.current) {
-      glow.current.opacity = open * (0.5 + 0.06 * Math.sin(time * 2.2));
+      glow.current.opacity = open * (0.5 + 0.06 * Math.sin(t * 2.2));
     }
     if (phone.current) {
       phone.current.position.set(
@@ -172,9 +179,11 @@ function Devices({ progress }: { progress: ScrollProgress }) {
 }
 
 export default function DeviceCanvas({
-  progress
+  progress,
+  reduce = false
 }: {
   progress: ScrollProgress;
+  reduce?: boolean;
 }) {
   return (
     <Canvas
@@ -189,7 +198,7 @@ export default function DeviceCanvas({
       <directionalLight position={[3, 4, 6]} intensity={1.2} color="#fff4e8" />
       <pointLight position={[-4, -1, 3]} intensity={1.7} color="#6fbfaa" />
       <pointLight position={[4, 1, 2]} intensity={1.3} color="#ff9e72" />
-      <Devices progress={progress} />
+      <Devices progress={progress} reduce={reduce} />
     </Canvas>
   );
 }

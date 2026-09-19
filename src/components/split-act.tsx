@@ -170,6 +170,7 @@ export function SplitAct() {
                 offsetY={wide ? 0 : -1.15}
                 scale={wide ? 0.92 : 0.55}
                 compact={!wide}
+                reduce={reduce}
               />
             </Suspense>
           </div>
