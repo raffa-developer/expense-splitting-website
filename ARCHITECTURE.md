@@ -31,11 +31,18 @@ Verification).
 | `src/App.tsx` | Page composition and the global scroll progress bar |
 | `src/components/product-film-act.tsx` | The film act: hero, captions, canvas gating, error boundary |
 | `src/components/product-film-fallback.tsx` | Labelled screenshot figure for no-WebGL and out-of-range fallbacks |
-| `src/components/mechanics.tsx` | The split-types section |
+| `src/components/mechanics.tsx` | The split-types section: an interactive ledger that reallocates €100.00 across three people in each of the four split modes |
 | `src/components/*-section.tsx` | The remaining page acts |
 | `src/components/nav.tsx`, `footer.tsx` | Chrome, language toggle, GitHub link |
 | `src/lib/animation.ts` | anime.js wrappers: `useScrollProgress`, `useGlobalScrollProgress`, `useReveal`, `clamp`, `smoothstep` |
-| `src/lib/motion.tsx` | Motion provider: system preference plus a persisted on/off override |
+| `src/lib/motion.tsx` | Motion provider: fixed on, sets `motion-forced` |
+| `src/lib/theme.tsx` | Theme provider: `light` / `dark` / `system`, persisted under `expense-splitting-theme` |
+| `src/lib/theme.test.ts` | Vitest coverage for `resolveTheme` |
+| `src/components/theme-toggle.tsx` | Nav menu for the three theme choices |
+| `src/components/app-window.tsx` | Framed app screen (traffic-light chrome bar) used by the split and settle acts |
+| `src/lib/split.ts` | Integer-cent allocation with largest-remainder distribution; powers the split ledger |
+| `src/lib/split.test.ts` | Vitest coverage for the allocation sums and `formatCents` |
+| `src/lib/money.ts` | `formatCents(cents, locale)`, the one place money hits `Intl` |
 | `src/lib/product-film-motion.ts` | Pure progress-to-state math: chapters, captions, orbit clamp, screen crossfade |
 | `src/lib/product-film-motion.test.ts` | Vitest coverage for that math |
 | `src/lib/use-media.ts` | `useInRange`, `useMediaQuery`, `supportsWebGL` |
@@ -57,10 +64,10 @@ the nav, five sections, and the footer. Section order and heights:
 | Section | Height | Content |
 | --- | --- | --- |
 | `ProductFilmAct` | 420vh wide, 320vh compact | Hero copy, film canvas, caption band |
-| `Mechanics` | auto | How the four split types work |
-| `SettleSection` | auto | Settlement explanation, interactive transfer list |
-| `TechSection` | auto | Stack and repository facts |
-| `RunSection` | auto | `docker compose` copy-paste block |
+| `Mechanics` | auto | Split ledger: mode switch, per-person shares, exact total |
+| `SettleSection` | auto | Settlement ledger: transfer rows, running total, paid state |
+| `TechSection` | auto | The `paid − owed + settled = 0` invariant, then stack and repository facts |
+| `RunSection` | auto | Two-command terminal block with output lines and a copy button |
 
 The film act is tall so its sticky stage stays pinned for the whole timeline; the
 remaining sections size to their content.
@@ -163,9 +170,11 @@ Nothing loads a model file. Every mesh is built at runtime:
 - `product-film/phone.tsx` — rounded-ring body, front and back glass panels, three
   screens filling the 0.8×1.7 frame window and crossfading with `SCREEN_FADE = 0.7`,
   a ceramic camera island with three lenses and a flash, and side buttons.
-- `product-film/studio.tsx` — 64-unit floor plane, `Fog(studioBlack, 9, 30)`, a
-  gradient equirectangular environment canvas (three light blobs), key and cobalt rim
-  lights, a green point fill driven by `settled`, and a contact shadow. No HDR files.
+- `product-film/studio.tsx` — 64-unit floor plane, themed fog, a gradient
+  equirectangular environment canvas (three light blobs), a warm key light and a
+  brand-pine rim light, a green point fill driven by `settled`, and a contact shadow.
+  `STAGE_LOOKS` holds a light and a dark variant, so floor, fog, lights, and the
+  environment map follow the theme. No HDR files.
 
 `scene.tsx` loads the three desktop screenshots for the laptop and three mobile ones
 for the phone through `useScreenTextures`. Because `ShapeGeometry` emits UVs in local
@@ -213,37 +222,57 @@ typecheck` instead of rendering a raw key. The provider sets
 `expense-splitting-locale`, and falls back to `navigator.language` when nothing is
 stored. `t("key")` supports `{name}` interpolation.
 
-## Styling
+## Styling and theming
 
-Tailwind v4 reads its configuration from CSS. `src/index.css` declares the palette as
-CSS variables on `:root`, exposes them to utilities in `@theme inline` (`--color-pine`
-becomes `bg-pine`, `text-pine`, and so on), and defines three custom utilities:
-`money` for tabular monospace numerals, `stage-vignette` for the stage edge falloff,
-and `card-surface` for glass cards. The hero glow is an inline radial gradient in
-`product-film-act.tsx`.
+The site wears the app's palette. Light is the default; `.dark` on `<html>` swaps the
+same variable names, so components rarely need a `dark:` class. Values mirror
+`apps/web/src/index.css` in the app repository.
 
-| Token | Value | Use |
-| --- | --- | --- |
-| `--canvas` | `#080b10` | Page and studio background |
-| `--surface`, `--surface-strong` | `#151a22`, `#1e2530` | Cards and code blocks |
-| `--ink`, `--muted` | `#f2f5f7`, `#8f9aa8` | Text |
-| `--pine` | `#72e1b1` | Primary accent, progress bar, settle actions |
-| `--apricot` | `#8dbfff` | Secondary accent, film reflections |
-| `--teal`, `--plum`, `--brick`, `--butter` | `#5fb8c9`, `#9b8cf2`, `#d98f9f`, `#d6c98a` | Reserved accent slots, retained in CSS but unreferenced by current components |
-| `--line` | 12% ink | Hairlines and borders |
+Tailwind v4 reads its configuration from CSS. `src/index.css` declares the two palettes
+as CSS variables (`:root` for light, `.dark` for dark), exposes them to utilities in
+`@theme inline` (`--color-pine` becomes `bg-pine`, `text-pine`, and so on), and defines
+custom utilities: `money` for tabular monospace numerals, `stage-vignette` for the stage
+edge falloff, `card-surface` for glass cards, and `hero-glow` for the hero radial wash.
+
+| Token | Light | Dark | Use |
+| --- | --- | --- | --- |
+| `--canvas` | `#f6f1ea` | `#171310` | Page and stage background |
+| `--surface` | `#ffffff` | `#211b17` | Cards, app windows, code blocks |
+| `--muted-surface` | `#eee7de` | `#251f1a` | Inset panels, terminal rows, graph labels |
+| `--ink`, `--muted` | `#241f1c`, `#7c746b` | `#f0eae2`, `#a79c90` | Text |
+| `--pine` | `#1e5b4f` | `#6fbfaa` | Primary accent, progress bar, settle actions |
+| `--apricot`, `--accent` | `#ff8c5a`, `#ffe4d6` | `#ffa07a`, `#3a2a20` | Secondary accent, extra-cent highlight, settled panel |
+| `--positive`, `--negative` | `#1f7a6f`, `#c0503c` | `#4fbfae`, `#e58270` | Money up and down, window traffic lights |
+| `--line`, `--line-strong` | `#e4dacf`, 25% ink | `#332b24`, 28% ink | Hairlines and borders |
+| `--stage-vignette`, `--hero-glow`, `--caption-shadow`, `--window-shadow`, `--frame-shadow` | light-tuned | dark-tuned | Effect values that must flip with the theme |
 
 Display type is Gabarito, body copy is Karla, numerals are DM Mono. All three are
 self-hosted, so the page needs no external font requests.
 
+### Theme runtime
+
+`src/lib/theme.tsx` owns the choice (`light`, `dark`, or `system`), persists it in
+`localStorage` under `expense-splitting-theme` (the same key the app uses), and tracks
+`prefers-color-scheme` while the choice is `system`. `applyTheme` toggles the `dark`
+class, sets `color-scheme`, and rewrites the `theme-color` meta tag. An inline script in
+`index.html` applies the stored theme before first paint, so a dark-mode reload never
+flashes light. `ThemeToggle` in the nav offers the three choices.
+
+The 3D stage follows the theme too: `StudioEnvironment` takes the resolved theme and
+swaps `STAGE_LOOKS` (background, floor, fog, key and rim lights, contact shadow, and the
+procedural environment map), and the canvas background color comes from the same source.
+
 ## Verification
 
 `npm test` (Vitest: chapters, device timing, settle ramp, orbit clamp, crossfade
-sums), `npm run typecheck`, and `npm run build` are the standing gates. For 3D work the process is a
-structural Playwright pass against the dev server: step the page through scroll
-fractions at 1440x900 and 390x844, assert zero console and page errors, assert exactly
-one canvas while the film is in view and zero after scrolling past it, then repeat
-with `reduced_motion="reduce"` and with `--disable-webgl --disable-webgl2`. The
-scripts live outside the repository, so a fresh clone has the process but not the
+sums, theme resolution), `npm run typecheck`, and `npm run build` are the standing gates.
+For 3D work the process is a structural Playwright pass against the dev server: step the
+page through scroll fractions at 1440x900 and 390x844, assert zero console and page
+errors, assert exactly one canvas while the film is in view and zero after scrolling past
+it, then repeat with `reduced_motion="reduce"` and with `--disable-webgl --disable-webgl2`.
+A separate pass toggles light, dark, and system, asserts the computed colors of the body,
+headings, app windows, and `theme-color` meta, and confirms the choice survives a reload.
+The scripts live outside the repository, so a fresh clone has the process but not the
 harness.
 
 ## Configuration and deployment

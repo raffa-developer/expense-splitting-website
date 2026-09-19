@@ -7,7 +7,7 @@ Marketing site for [Expense Splitting Engine](https://github.com/raffa-developer
 | Layer | Choice |
 | --- | --- |
 | Build | Vite 8, React 19.2, TypeScript 7 |
-| Styling | Tailwind v4, CSS-first tokens in `src/index.css` |
+| Styling | Tailwind v4, CSS-first tokens in `src/index.css`, app light and dark palettes |
 | 3D | three 0.186, `@react-three/fiber` 9, `@react-three/drei` 10 |
 | Scroll and motion | anime.js 4 for scroll and reveals, Lenis for smooth scroll |
 | Copy | pt-PT and en dictionaries in `src/lib/i18n.tsx` |
@@ -29,6 +29,10 @@ There is no lint step. Tests, typecheck, and build are the gates.
 ## Page structure
 
 `App.tsx` renders a fixed progress bar, the nav, five sections, and the footer: the film, the four split types, settlement, tech facts, and a `docker compose` quickstart. Only the film runs custom scroll choreography; the other sections use one-shot reveal entrances.
+
+## Theme
+
+The site wears the app's own palette, taken from `apps/web/src/index.css`: light by default, with a dark set behind `.dark` on `<html>`. The nav's theme button offers light, dark, and system, and the choice persists in `localStorage` under `expense-splitting-theme`, the same key the app uses. An inline script in `index.html` applies it before first paint, so a dark-mode reload never flashes light. The 3D stage swaps its background, floor, fog, lights, and environment map with the theme.
 
 ## The product film
 
