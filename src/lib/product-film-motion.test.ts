@@ -3,7 +3,6 @@ import { applyScreenOpacities } from "@/three/product-film/laptop";
 import { STUDIO_PALETTE, STAGE_LOOKS } from "@/three/product-film/studio";
 import { THEME_CANVAS } from "@/lib/theme";
 import {
-  clampOrbit,
   getProductFilmState,
   productFilmCaptionKey,
   screenCrossfade
@@ -47,13 +46,6 @@ describe("product-film motion", () => {
     expect(productFilmCaptionKey(0.4)).toBe("film.laptop");
     expect(productFilmCaptionKey(0.7)).toBe("film.phone");
     expect(productFilmCaptionKey(0.95)).toBe("film.settle");
-  });
-
-  it("constrains drag orbit to the composed camera limits", () => {
-    expect(clampOrbit({ azimuth: 1, elevation: -1 })).toEqual({
-      azimuth: 10 * Math.PI / 180,
-      elevation: -5 * Math.PI / 180
-    });
   });
 
   it("makes neighboring screenshot opacities complementary", () => {

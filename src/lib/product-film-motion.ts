@@ -1,7 +1,5 @@
 import { clamp, smoothstep } from "./animation";
 
-export type Orbit = { azimuth: number; elevation: number };
-
 export type ActiveDevice = "laptop" | "phone" | null;
 
 export type FilmCaptionKey =
@@ -45,13 +43,6 @@ export interface ProductFilmState {
 
 function clampRange(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
-}
-
-export function clampOrbit({ azimuth, elevation }: Orbit): Orbit {
-  return {
-    azimuth: clampRange(azimuth, -10 * Math.PI / 180, 10 * Math.PI / 180),
-    elevation: clampRange(elevation, -5 * Math.PI / 180, 5 * Math.PI / 180)
-  };
 }
 
 export function screenCrossfade(

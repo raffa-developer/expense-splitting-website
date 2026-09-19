@@ -1,14 +1,11 @@
-import { useLayoutEffect, useRef, type PointerEvent } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
-import type { RefObject } from "react";
 import { clamp, type ScrollProgress } from "@/lib/animation";
 import { THEME_CANVAS, type ResolvedTheme } from "@/lib/theme";
 import {
-  clampOrbit,
   getProductFilmState,
-  type Orbit,
   type ProductFilmState
 } from "@/lib/product-film-motion";
 import { ContextReleaser } from "@/three/context-releaser";
@@ -29,12 +26,6 @@ const PHONE_SCREENS = [mobileDashboard, mobileGroup, mobileExpenses];
 const LAPTOP_SCREEN = { width: 3.08, height: 1.96 } as const;
 const PHONE_SCREEN = { width: 0.8, height: 1.7 } as const;
 
-const DEG = Math.PI / 180;
-const AZIMUTH_RANGE = 20 * DEG;
-const ELEVATION_RANGE = 10 * DEG;
-const ORBIT_DAMPING = 6;
-const ORBIT_EPSILON = 0.0001;
-
 const COMPACT_STAGE_SCALE = 0.46;
 const RAIL_SCALE_COMPACT = 0.3;
 
@@ -48,19 +39,8 @@ const PHONE_RISE_SPAN = 0.4;
 const COMPACT_LAPTOP_SINK = 3.2;
 const COMPACT_LAPTOP_HANDOFF_END = 0.7;
 
-const BASE_POSITION = new THREE.Vector3();
 const FOCUS_POSITION = new THREE.Vector3();
-const CAMERA_OFFSET = new THREE.Vector3();
-const UP = new THREE.Vector3(0, 1, 0);
-const RIGHT = new THREE.Vector3(1, 0, 0);
-
-interface DragState {
-  pointerId: number;
-  x: number;
-  y: number;
-  azimuth: number;
-  elevation: number;
-}
+const CAMERA_POSITION = new THREE.Vector3();
 
 // ShapeGeometry emits UVs in local shape units, so screenshot maps need the
 // screen bounds folded into their repeat/offset. Plane and image aspects rarely
@@ -112,16 +92,12 @@ function FilmScene({
   progress,
   compact,
   reduce,
-  theme,
-  orbitRef,
-  draggingRef
+  theme
 }: {
   progress: ScrollProgress;
   compact: boolean;
   reduce: boolean;
   theme: ResolvedTheme;
-  orbitRef: RefObject<Orbit>;
-  draggingRef: RefObject<boolean>;
 }) {
   const filmRef = useRef<ProductFilmState | null>(null);
   if (filmRef.current === null) {
@@ -146,7 +122,7 @@ function FilmScene({
     mapScreenUvs(phoneTextures, PHONE_SCREEN.width, PHONE_SCREEN.height);
   }, [phoneTextures]);
 
-  useFrame((root, delta) => {
+  useFrame((root) => {
     const next = getProductFilmState(progress.current, compact, reduce);
     film.activeDevice = next.activeDevice;
     film.settled = next.settled;
@@ -163,15 +139,6 @@ function FilmScene({
 
     settledRef.current = next.settled;
 
-    const orbit = orbitRef.current;
-    if (!draggingRef.current) {
-      const ease = 1 - Math.exp(-ORBIT_DAMPING * delta);
-      orbit.azimuth += (0 - orbit.azimuth) * ease;
-      orbit.elevation += (0 - orbit.elevation) * ease;
-      if (Math.abs(orbit.azimuth) < ORBIT_EPSILON) orbit.azimuth = 0;
-      if (Math.abs(orbit.elevation) < ORBIT_EPSILON) orbit.elevation = 0;
-    }
-
     const railScale = compact ? RAIL_SCALE_COMPACT : 1;
     const push =
       (plan * 0.5 + captureScreens * 0.25 - settle * 0.75) * railScale;
@@ -181,15 +148,12 @@ function FilmScene({
     const focusZ = captureScreens * 0.35 * railScale;
 
     FOCUS_POSITION.set(film.camera.x, focusY, focusZ);
-    BASE_POSITION.set(
+    CAMERA_POSITION.set(
       film.camera.x,
       film.camera.y,
       film.camera.z - push
     );
-    CAMERA_OFFSET.subVectors(BASE_POSITION, FOCUS_POSITION);
-    CAMERA_OFFSET.applyAxisAngle(UP, orbit.azimuth);
-    CAMERA_OFFSET.applyAxisAngle(RIGHT, orbit.elevation);
-    root.camera.position.copy(FOCUS_POSITION).add(CAMERA_OFFSET);
+    root.camera.position.copy(CAMERA_POSITION);
     root.camera.lookAt(FOCUS_POSITION);
 
     const laptop = laptopRef.current;
@@ -267,75 +231,8 @@ export default function ProductFilmCanvas({
   theme,
   reduce = false
 }: ProductFilmCanvasProps) {
-  const orbit = useRef<Orbit>({ azimuth: 0, elevation: 0 });
-  const drag = useRef<DragState | null>(null);
-  const dragging = useRef(false);
-
-  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (reduce || !event.isPrimary || event.button !== 0) {
-      return;
-    }
-    const target = event.target;
-    if (target instanceof Element && target.closest("a, button")) {
-      return;
-    }
-    dragging.current = true;
-    drag.current = {
-      pointerId: event.pointerId,
-      x: event.clientX,
-      y: event.clientY,
-      azimuth: orbit.current.azimuth,
-      elevation: orbit.current.elevation
-    };
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-      dragging.current = false;
-      drag.current = null;
-    }
-  };
-
-  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    const active = drag.current;
-    if (reduce || !active || active.pointerId !== event.pointerId) {
-      return;
-    }
-    const rect = event.currentTarget.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) {
-      return;
-    }
-    orbit.current = clampOrbit({
-      azimuth:
-        active.azimuth -
-        ((event.clientX - active.x) / rect.width) * AZIMUTH_RANGE,
-      elevation:
-        active.elevation -
-        ((event.clientY - active.y) / rect.height) * ELEVATION_RANGE
-    });
-  };
-
-  const handlePointerEnd = (event: PointerEvent<HTMLDivElement>) => {
-    const active = drag.current;
-    if (!active || active.pointerId !== event.pointerId) {
-      return;
-    }
-    drag.current = null;
-    dragging.current = false;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-  };
-
   return (
-    <div
-      className="relative h-full w-full touch-pan-y select-none"
-      aria-hidden="true"
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerEnd}
-      onPointerCancel={handlePointerEnd}
-      onLostPointerCapture={handlePointerEnd}
-    >
+    <div className="relative h-full w-full" aria-hidden="true">
       <Canvas
         dpr={[1, compact ? 1.25 : 1.5]}
         gl={{ antialias: true }}
@@ -354,8 +251,6 @@ export default function ProductFilmCanvas({
           compact={compact}
           reduce={reduce}
           theme={theme}
-          orbitRef={orbit}
-          draggingRef={dragging}
         />
       </Canvas>
     </div>
