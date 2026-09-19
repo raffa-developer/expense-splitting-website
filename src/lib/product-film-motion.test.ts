@@ -15,6 +15,13 @@ describe("product-film motion", () => {
     expect(getProductFilmState(0.53, false, false).coin.open).toBe(0);
   });
 
+  it("moves focus from laptop to phone after the product handoff", () => {
+    const laptop = getProductFilmState(0.45, false, false);
+    const phone = getProductFilmState(0.7, false, false);
+    expect(laptop.activeDevice).toBe("laptop");
+    expect(phone.activeDevice).toBe("phone");
+  });
+
   it("constrains drag orbit to the composed camera limits", () => {
     expect(clampOrbit({ azimuth: 1, elevation: -1 })).toEqual({
       azimuth: 10 * Math.PI / 180,
