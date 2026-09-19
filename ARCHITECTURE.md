@@ -215,9 +215,10 @@ stored. `t("key")` supports `{name}` interpolation.
 
 Tailwind v4 reads its configuration from CSS. `src/index.css` declares the palette as
 CSS variables on `:root`, exposes them to utilities in `@theme inline` (`--color-pine`
-becomes `bg-pine`, `text-pine`, and so on), and defines two custom utilities:
-`stage-vignette` for the stage edge falloff, `money` for tabular monospace numerals.
-The hero glow is an inline radial gradient in `product-film-act.tsx`.
+becomes `bg-pine`, `text-pine`, and so on), and defines three custom utilities:
+`money` for tabular monospace numerals, `stage-vignette` for the stage edge falloff,
+and `card-surface` for glass cards. The hero glow is an inline radial gradient in
+`product-film-act.tsx`.
 
 | Token | Value | Use |
 | --- | --- | --- |

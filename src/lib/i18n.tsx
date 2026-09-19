@@ -27,17 +27,11 @@ const pt = {
   "hero.ctaDemoSoon": "Demo em breve",
   "hero.scroll": "Desce para dividir",
 
-  "split.kicker": "A divisão",
-  "split.title": "Cada um paga a sua parte.",
-  "split.body":
-    "Igual, valores exatos, percentagens ou quotas. O motor distribui os cêntimos com arredondamento largest-remainder para que a soma bata sempre ao cêntimo.",
-  "split.share1": "40,00 €",
-  "split.share2": "25,00 €",
-  "split.share3": "15,00 €",
-  "split.share4": "10,00 €",
-  "split.share5": "10,00 €",
-
   "film.share": "A conta dividida em partes exatas.",
+  "film.share1": "40,00 €",
+  "film.share2": "25,00 €",
+  "film.share3": "20,00 €",
+  "film.share4": "15,00 €",
   "film.laptop": "Planeia em conjunto no painel do grupo.",
   "film.phone": "Regista despesas onde estiveres.",
   "film.settle": "Os saldos acertam a zero.",
@@ -52,13 +46,6 @@ const pt = {
   "mechanics.balance.title": "Saldos sempre certos",
   "mechanics.balance.body":
     "Tudo em cêntimos inteiros, atualizado na mesma transação de cada escrita.",
-
-  "device.title": "A app, em detalhe.",
-  "device.caption1": "O teu saldo em todos os grupos, num só painel.",
-  "device.caption2": "Despesas, acertos sugeridos e histórico de pagamentos.",
-  "device.caption3": "Quem pagou o quê, comparado com a parte de cada um.",
-  "device.caption4": "Pessoas e grupos, sempre a par.",
-  "device.caption5": "No bolso: os mesmos saldos.",
 
   "settle.title": "Acertar contas sem discussão.",
   "settle.body":
@@ -101,17 +88,11 @@ const en: Record<keyof typeof pt, string> = {
   "hero.ctaDemoSoon": "Demo coming soon",
   "hero.scroll": "Scroll to split",
 
-  "split.kicker": "The split",
-  "split.title": "Everyone pays their share.",
-  "split.body":
-    "Equal, exact amounts, percentages or weights. The engine distributes cents with largest-remainder rounding so the sum always lands to the cent.",
-  "split.share1": "40,00 €",
-  "split.share2": "25,00 €",
-  "split.share3": "15,00 €",
-  "split.share4": "10,00 €",
-  "split.share5": "10,00 €",
-
   "film.share": "The bill, split into exact shares.",
+  "film.share1": "40,00 €",
+  "film.share2": "25,00 €",
+  "film.share3": "20,00 €",
+  "film.share4": "15,00 €",
   "film.laptop": "Plan together on the group dashboard.",
   "film.phone": "Add expenses from anywhere.",
   "film.settle": "Balances settle back to zero.",
@@ -126,13 +107,6 @@ const en: Record<keyof typeof pt, string> = {
   "mechanics.balance.title": "Balances stay exact",
   "mechanics.balance.body":
     "Everything in integer cents, updated in the same transaction as each write.",
-
-  "device.title": "The app, up close.",
-  "device.caption1": "Your balance across every group, in one panel.",
-  "device.caption2": "Expenses, suggested settlements and payment history.",
-  "device.caption3": "Who paid what, compared with each person's share.",
-  "device.caption4": "People and groups, always in sync.",
-  "device.caption5": "In your pocket: the same balances.",
 
   "settle.title": "Settle up without the argument.",
   "settle.body":

@@ -71,11 +71,11 @@ captions crossfade at progress 0.34 / 0.62 / 0.9. Dragging orbits the camera and
 is clamped to ±10° azimuth and ±5° elevation, easing back to zero at 6/s on
 release. One canvas at a time: it mounts via `useInRange` just before the
 section enters the viewport, unmounts as the section leaves, and unmounting
-disposes the renderer and forces WebGL context loss so the next mount starts
-clean. Reduced motion pins progress to 1 and shows the settle caption. Without
-WebGL, or whenever the canvas is not mounted, the section shows the labelled
-screenshot figure fallback; compact viewports scale the stage down and drop the
-devices per chapter.
+disposes the renderer; React Three Fiber then forces WebGL context loss so the
+next mount starts clean. Reduced motion pins progress to 1 and shows the settle
+caption. Without WebGL, or whenever the canvas is not mounted, the section shows
+the labelled screenshot figure fallback; compact viewports scale the stage down
+and drop the devices per chapter.
 
 ## Configuration
 

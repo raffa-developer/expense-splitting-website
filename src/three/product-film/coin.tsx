@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { ProductFilmState } from "@/lib/product-film-motion";
@@ -219,6 +219,7 @@ interface CoinGeometry {
   shell: THREE.LatheGeometry;
   wedges: { geometry: THREE.ExtrudeGeometry; arc: CoinArc }[];
   ticks: THREE.Matrix4[];
+  tickGeometry: THREE.BoxGeometry;
 }
 
 function buildCoinGeometry(compact: boolean): CoinGeometry {
@@ -229,7 +230,12 @@ function buildCoinGeometry(compact: boolean): CoinGeometry {
       geometry: createWedgeGeometry(arc, compact),
       arc
     })),
-    ticks: createTickMatrices(compact ? TICK_COUNT_COMPACT : TICK_COUNT)
+    ticks: createTickMatrices(compact ? TICK_COUNT_COMPACT : TICK_COUNT),
+    tickGeometry: new THREE.BoxGeometry(
+      TICK_LENGTH,
+      TICK_WIDTH,
+      TICK_HEIGHT
+    )
   };
 }
 
@@ -247,6 +253,15 @@ export function MachinedCoin({
   latest.current = state;
 
   const coin = useMemo(() => buildCoinGeometry(compact), [compact]);
+
+  useEffect(
+    () => () => {
+      coin.shell.dispose();
+      coin.tickGeometry.dispose();
+      coin.wedges.forEach((piece) => piece.geometry.dispose());
+    },
+    [coin]
+  );
 
   useLayoutEffect(() => {
     inlayMaterial.opacity = latest.current.settled;
@@ -305,10 +320,9 @@ export function MachinedCoin({
       <instancedMesh
         ref={ticksMesh}
         args={[undefined, undefined, coin.ticks.length]}
+        geometry={coin.tickGeometry}
         material={grooveMaterial}
-      >
-        <boxGeometry args={[TICK_LENGTH, TICK_WIDTH, TICK_HEIGHT]} />
-      </instancedMesh>
+      />
 
       <group position={[0, 0, FACE_HEIGHT + 0.004]}>
         <mesh material={inlayMaterial}>
