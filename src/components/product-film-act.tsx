@@ -1,4 +1,13 @@
-import { lazy, Suspense, useEffect, useMemo, useRef } from "react";
+import {
+  Component,
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type ErrorInfo,
+  type ReactNode
+} from "react";
 import { ProductFilmFallback } from "@/components/product-film-fallback";
 import { GithubMark } from "@/components/nav";
 import { smoothstep, useScrollProgress } from "@/lib/animation";
@@ -13,6 +22,43 @@ import { DEMO_URL, GITHUB_URL } from "@/lib/site";
 import { supportsWebGL, useInRange, useMediaQuery } from "@/lib/use-media";
 
 const ProductFilmCanvas = lazy(() => import("@/three/product-film/scene"));
+
+let webglSupport: boolean | null = null;
+
+function detectWebGLSupport(): boolean {
+  if (webglSupport === null) {
+    webglSupport = supportsWebGL();
+  }
+  return webglSupport;
+}
+
+interface FilmCanvasBoundaryProps {
+  fallback: ReactNode;
+  children: ReactNode;
+}
+
+interface FilmCanvasBoundaryState {
+  failed: boolean;
+}
+
+class FilmCanvasBoundary extends Component<
+  FilmCanvasBoundaryProps,
+  FilmCanvasBoundaryState
+> {
+  state: FilmCanvasBoundaryState = { failed: false };
+
+  static getDerivedStateFromError(): FilmCanvasBoundaryState {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: unknown, info: ErrorInfo): void {
+    console.error("Product film canvas failed to render", error, info);
+  }
+
+  render(): ReactNode {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
 
 const CAPTION_FADE = 0.05;
 
@@ -31,9 +77,13 @@ export function ProductFilmAct() {
   const wide = useMediaQuery("(min-width: 900px)");
   const { motion } = useMotion();
   const reduce = !motion;
-  const webgl = useMemo(() => supportsWebGL(), []);
+  const [webgl, setWebgl] = useState(() => webglSupport === true);
   const near = useInRange(section, 1.1, 0);
   const showCanvas = webgl && near;
+
+  useEffect(() => {
+    setWebgl(detectWebGLSupport());
+  }, []);
 
   const progress = useScrollProgress(
     section,
@@ -111,14 +161,18 @@ export function ProductFilmAct() {
         />
 
         {showCanvas ? (
-          <div className="absolute inset-0" aria-hidden="true">
-            <Suspense fallback={null}>
-              <ProductFilmCanvas
-                progress={progress}
-                compact={!wide}
-                reduce={reduce}
-              />
-            </Suspense>
+          <div className="absolute inset-0">
+            <FilmCanvasBoundary
+              fallback={<ProductFilmFallback compact={!wide} />}
+            >
+              <Suspense fallback={<ProductFilmFallback compact={!wide} />}>
+                <ProductFilmCanvas
+                  progress={progress}
+                  compact={!wide}
+                  reduce={reduce}
+                />
+              </Suspense>
+            </FilmCanvasBoundary>
           </div>
         ) : null}
 
