@@ -78,15 +78,18 @@ export function useReveal(
     }
     if (!motion) return;
 
-    utils.set(element, { opacity: 0, y: 16 });
+    // Drift only, never opacity. Content is readable the moment it is on
+    // screen, including when a nav click lands directly on the section. A
+    // hidden-until-scrolled treatment would show a blank card to anyone who
+    // arrives by link, so the reveal never withholds information.
+    utils.set(element, { y: 16 });
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             animate(element, {
-              opacity: 1,
               y: 0,
-              duration: 700,
+              duration: 600,
               delay,
               ease: "outCubic"
             });
