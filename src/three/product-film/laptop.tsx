@@ -14,7 +14,6 @@ import { createLinearTexture, createRadialTexture } from "@/three/textures";
 export const DEVICE_TOKENS = {
   graphite: "#151a22",
   porcelain: "#f2f5f7",
-  iceBlue: "#8dbfff",
   settleGreen: "#72e1b1",
   studioBlack: "#080b10"
 } as const;
@@ -76,7 +75,7 @@ const shellMaterial = new THREE.MeshPhysicalMaterial({
 });
 
 const hingeMaterial = new THREE.MeshStandardMaterial({
-  color: "#0d1117",
+  color: "#120f0c",
   metalness: 0.85,
   roughness: 0.42
 });
@@ -88,7 +87,7 @@ const keyboardMaterial = new THREE.MeshStandardMaterial({
 });
 
 const keyMaterial = new THREE.MeshPhysicalMaterial({
-  color: "#1b2029",
+  color: "#201b17",
   metalness: 0.12,
   roughness: 0.4,
   clearcoat: 0.25,
@@ -108,7 +107,7 @@ const trackpadMaterial = new THREE.MeshPhysicalMaterial({
 });
 
 const bezelMaterial = new THREE.MeshPhysicalMaterial({
-  color: "#050609",
+  color: "#0a0806",
   metalness: 0.3,
   roughness: 0.14,
   clearcoat: 0.8,
@@ -116,7 +115,7 @@ const bezelMaterial = new THREE.MeshPhysicalMaterial({
 });
 
 const coverGlassMaterial = new THREE.MeshPhysicalMaterial({
-  color: "#0a0f16",
+  color: "#0f0c09",
   transparent: true,
   opacity: 0.18,
   metalness: 0,
@@ -352,8 +351,8 @@ export function StudioLaptop({
   const reflectionTexture = useMemo(
     () =>
       createLinearTexture(
-        "rgba(141, 191, 255, 0.22)",
-        "rgba(141, 191, 255, 0)"
+        "rgba(111, 191, 170, 0.22)",
+        "rgba(111, 191, 170, 0)"
       ),
     []
   );

@@ -7,7 +7,7 @@ export function ProductFilmFallback({ compact }: { compact: boolean }) {
   const label = compact ? t("film.phone") : t("film.laptop");
 
   const frame = (
-    <figure className="card-surface relative flex w-fit max-w-full flex-col p-2 shadow-[0_40px_120px_rgba(0,0,0,0.7)]">
+    <figure className="card-surface relative flex w-fit max-w-full flex-col p-2 shadow-frame">
       <figcaption
         className={`flex shrink-0 items-center gap-2 px-2 pt-1 pb-2 text-xs font-semibold text-muted ${
           compact ? "justify-center text-center" : ""
@@ -15,11 +15,11 @@ export function ProductFilmFallback({ compact }: { compact: boolean }) {
       >
         <span
           aria-hidden="true"
-          className="size-1.5 rounded-full bg-pine shadow-[0_0_10px_rgba(114,225,177,0.9)]"
+          className="size-1.5 rounded-full bg-pine"
         />
         {label}
       </figcaption>
-      <div className="mx-auto overflow-hidden rounded-xl border border-black/60 bg-[#080b10]">
+      <div className="mx-auto overflow-hidden rounded-xl border border-line bg-canvas">
         <img
           src={compact ? mobileDashboard : desktopDashboard}
           alt={label}

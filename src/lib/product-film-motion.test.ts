@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyScreenOpacities } from "@/three/product-film/laptop";
-import { STUDIO_PALETTE } from "@/three/product-film/studio";
+import { STUDIO_PALETTE, STAGE_LOOKS } from "@/three/product-film/studio";
+import { THEME_CANVAS } from "@/lib/theme";
 import {
   clampOrbit,
   getProductFilmState,
@@ -69,5 +70,28 @@ describe("product-film motion", () => {
   it("uses the prescribed studio palette", () => {
     expect(STUDIO_PALETTE.settleGreen).toBe("#72e1b1");
     expect(STUDIO_PALETTE.studioBlack).toBe("#080b10");
+  });
+
+  it("keeps the stage free of the old blue studio tint", () => {
+    for (const theme of ["light", "dark"] as const) {
+      const look = STAGE_LOOKS[theme];
+      expect(look.rim).not.toBe("#4f7fd6");
+      expect(look.accentReflection).not.toContain("141, 191, 255");
+    }
+    const dark = STAGE_LOOKS.dark;
+    const channel = (hex: string, index: number) =>
+      parseInt(hex.slice(1 + index * 2, 3 + index * 2), 16);
+    expect(channel(dark.rim, 1)).toBeGreaterThan(channel(dark.rim, 2));
+    expect(channel(dark.floor, 0)).toBeGreaterThan(channel(dark.floor, 2));
+    expect(channel(dark.background, 0)).toBeGreaterThan(
+      channel(dark.background, 2)
+    );
+  });
+
+  it("keeps the stage background identical to the page canvas", () => {
+    for (const theme of ["light", "dark"] as const) {
+      expect(STAGE_LOOKS[theme].background).toBe(THEME_CANVAS[theme]);
+      expect(STAGE_LOOKS[theme].fog).toBe(THEME_CANVAS[theme]);
+    }
   });
 });

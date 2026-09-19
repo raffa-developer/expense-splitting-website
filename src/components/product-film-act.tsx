@@ -14,6 +14,7 @@ import { GithubMark } from "@/components/nav";
 import { clamp, smoothstep, useScrollProgress } from "@/lib/animation";
 import { useI18n } from "@/lib/i18n";
 import { useMotion } from "@/lib/motion";
+import { useTheme } from "@/lib/theme";
 import {
   PRODUCT_FILM_CAPTION_EDGES,
   productFilmCaptionKey,
@@ -78,6 +79,7 @@ export function ProductFilmAct() {
   const hint = useRef<HTMLParagraphElement>(null);
   const wide = useMediaQuery("(min-width: 900px)");
   const motion = useMotion();
+  const { theme } = useTheme();
   const reduce = !motion;
   const [webgl] = useState(detectWebGLSupport);
   const near = useInRange(section, 1.1, 0);
@@ -157,7 +159,7 @@ export function ProductFilmAct() {
       <div id="app" className="sticky top-0 h-svh overflow-hidden">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,rgba(141,191,255,0.1),transparent_58%)]"
+          className="hero-glow pointer-events-none absolute inset-0"
         />
         <div
           aria-hidden="true"
@@ -173,6 +175,7 @@ export function ProductFilmAct() {
                 <ProductFilmCanvas
                   progress={progress}
                   compact={!wide}
+                  theme={theme}
                   reduce={reduce}
                 />
               </Suspense>
@@ -182,6 +185,13 @@ export function ProductFilmAct() {
 
         {!showCanvas && wide && !webgl ? (
           <ProductFilmFallback compact={false} />
+        ) : null}
+
+        {showCanvas || !wide ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-[55vh] bg-gradient-to-b from-canvas via-canvas/60 to-transparent"
+          />
         ) : null}
 
         <p
@@ -196,12 +206,6 @@ export function ProductFilmAct() {
         <div className="pointer-events-none relative z-10 flex h-full flex-col">
           <div className="mx-auto w-full max-w-6xl shrink-0 px-6 pt-24 sm:pt-28">
             <div ref={hero} className="pointer-events-auto relative max-w-xl">
-              {showCanvas || !wide ? (
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute -top-24 -left-24 -z-10 h-[55vh] w-screen bg-gradient-to-b from-canvas via-canvas/60 to-transparent"
-                />
-              ) : null}
               <h1 className="text-4xl leading-[1.1] font-extrabold min-[900px]:text-(length:--text-hero)">
                 {t("hero.title")}
               </h1>
@@ -223,7 +227,7 @@ export function ProductFilmAct() {
                     href={DEMO_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-line px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-white/30"
+                    className="inline-flex items-center gap-2 rounded-xl border border-line px-5 py-3 text-sm font-semibold text-ink transition-colors hover:border-line-strong"
                   >
                     {t("hero.ctaDemo")}
                   </a>
@@ -251,7 +255,7 @@ export function ProductFilmAct() {
                     captions.current[index] = element;
                   }}
                   aria-hidden={index === 0 ? "false" : "true"}
-                  className="absolute inset-x-0 bottom-0 font-display text-(length:--text-caption) leading-[1.05] font-extrabold tracking-[-0.02em] text-ink opacity-0 [text-shadow:0_2px_18px_rgba(0,0,0,0.85),0_1px_3px_rgba(0,0,0,0.6)]"
+                  className="absolute inset-x-0 bottom-0 font-display text-(length:--text-caption) leading-[1.05] font-extrabold tracking-[-0.02em] text-ink opacity-0 [text-shadow:var(--caption-shadow)]"
                 >
                   {t(caption.key)}
                 </p>

@@ -68,7 +68,7 @@ const frameMaterial = new THREE.MeshPhysicalMaterial({
 });
 
 const frontGlassMaterial = new THREE.MeshPhysicalMaterial({
-  color: "#05070a",
+  color: "#0a0806",
   metalness: 0.3,
   roughness: 0.12,
   clearcoat: 0.9,
@@ -76,7 +76,7 @@ const frontGlassMaterial = new THREE.MeshPhysicalMaterial({
 });
 
 const backGlassMaterial = new THREE.MeshPhysicalMaterial({
-  color: "#0b0e14",
+  color: "#100d0a",
   metalness: 0.25,
   roughness: 0.2,
   clearcoat: 1,
@@ -84,7 +84,7 @@ const backGlassMaterial = new THREE.MeshPhysicalMaterial({
 });
 
 const coverGlassMaterial = new THREE.MeshPhysicalMaterial({
-  color: "#0a0f16",
+  color: "#0f0c09",
   transparent: true,
   opacity: 0.16,
   metalness: 0,
@@ -110,7 +110,7 @@ const lensRingMaterial = new THREE.MeshPhysicalMaterial({
 });
 
 const lensMaterial = new THREE.MeshPhysicalMaterial({
-  color: "#060b12",
+  color: "#0b0906",
   metalness: 0.45,
   roughness: 0.05,
   clearcoat: 1,
@@ -119,8 +119,8 @@ const lensMaterial = new THREE.MeshPhysicalMaterial({
 });
 
 const flashMaterial = new THREE.MeshStandardMaterial({
-  color: "#e8eef4",
-  emissive: DEVICE_TOKENS.iceBlue,
+  color: "#f4ece2",
+  emissive: "#6fbfaa",
   emissiveIntensity: 0.25,
   roughness: 0.3
 });

@@ -4,6 +4,7 @@ import { PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
 import type { RefObject } from "react";
 import { clamp, type ScrollProgress } from "@/lib/animation";
+import { THEME_CANVAS, type ResolvedTheme } from "@/lib/theme";
 import {
   clampOrbit,
   getProductFilmState,
@@ -14,7 +15,7 @@ import { ContextReleaser } from "@/three/context-releaser";
 import { useScreenTextures } from "@/three/textures";
 import { StudioLaptop } from "./laptop";
 import { StudioPhone } from "./phone";
-import { STUDIO_PALETTE, StudioEnvironment } from "./studio";
+import { StudioEnvironment } from "./studio";
 import desktopDashboard from "@/assets/screens/desktop-dashboard.png";
 import desktopGroup from "@/assets/screens/desktop-group.png";
 import desktopExpenses from "@/assets/screens/desktop-expenses.png";
@@ -111,12 +112,14 @@ function FilmScene({
   progress,
   compact,
   reduce,
+  theme,
   orbitRef,
   draggingRef
 }: {
   progress: ScrollProgress;
   compact: boolean;
   reduce: boolean;
+  theme: ResolvedTheme;
   orbitRef: RefObject<Orbit>;
   draggingRef: RefObject<boolean>;
 }) {
@@ -224,7 +227,7 @@ function FilmScene({
 
   return (
     <>
-      <StudioEnvironment settledRef={settledRef} />
+      <StudioEnvironment settledRef={settledRef} theme={theme} />
       <group scale={compact ? COMPACT_STAGE_SCALE : 1}>
         <group ref={laptopRef} position={[0, LAPTOP_HIDDEN_Y, 0]} visible={false}>
           <StudioLaptop
@@ -254,12 +257,14 @@ function FilmScene({
 export interface ProductFilmCanvasProps {
   progress: ScrollProgress;
   compact: boolean;
+  theme: ResolvedTheme;
   reduce?: boolean;
 }
 
 export default function ProductFilmCanvas({
   progress,
   compact,
+  theme,
   reduce = false
 }: ProductFilmCanvasProps) {
   const orbit = useRef<Orbit>({ azimuth: 0, elevation: 0 });
@@ -341,13 +346,14 @@ export default function ProductFilmCanvas({
           far: 60
         }}
       >
-        <color attach="background" args={[STUDIO_PALETTE.studioBlack]} />
+        <color attach="background" args={[THEME_CANVAS[theme]]} />
         <ContextReleaser />
         <DprGuard compact={compact} />
         <FilmScene
           progress={progress}
           compact={compact}
           reduce={reduce}
+          theme={theme}
           orbitRef={orbit}
           draggingRef={dragging}
         />
