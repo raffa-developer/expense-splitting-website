@@ -12,7 +12,6 @@ import {
 } from "@/lib/product-film-motion";
 import { ContextReleaser } from "@/three/context-releaser";
 import { useScreenTextures } from "@/three/textures";
-import { MachinedCoin } from "./coin";
 import { StudioLaptop } from "./laptop";
 import { StudioPhone } from "./phone";
 import { STUDIO_PALETTE, StudioEnvironment } from "./studio";
@@ -26,8 +25,8 @@ import mobileExpenses from "@/assets/screens/mobile-expenses.png";
 const LAPTOP_SCREENS = [desktopDashboard, desktopGroup, desktopExpenses];
 const PHONE_SCREENS = [mobileDashboard, mobileGroup, mobileExpenses];
 
-const LAPTOP_SCREEN = { width: 2.4, height: 1.6 } as const;
-const PHONE_SCREEN = { width: 0.7, height: 1.515 } as const;
+const LAPTOP_SCREEN = { width: 2.5, height: 1.7 } as const;
+const PHONE_SCREEN = { width: 0.8, height: 1.7 } as const;
 
 const DEG = Math.PI / 180;
 const AZIMUTH_RANGE = 20 * DEG;
@@ -44,12 +43,6 @@ const PHONE_REST_Y = 0.86;
 const PHONE_HIDDEN_Y = -1.95;
 const FOG_HIDDEN_SETTLE = 0.9;
 
-const COIN_REST = new THREE.Vector3(0, 1.35, 0.55);
-const COIN_SETTLE = new THREE.Vector3(0, 1.25, 0.8);
-const COIN_PUCK_DESKTOP = new THREE.Vector3(-2.3, 0.45, 1.1);
-const COIN_PUCK_COMPACT = new THREE.Vector3(-1.6, 0.45, 1.1);
-const COIN_PUCK_SCALE = 0.32;
-const COIN_PUCK_SCALE_COMPACT = 0.22;
 const PHONE_RISE_SPAN = 0.4;
 const COMPACT_LAPTOP_SINK = 3.2;
 const COMPACT_LAPTOP_HANDOFF_END = 0.7;
@@ -57,7 +50,6 @@ const COMPACT_LAPTOP_HANDOFF_END = 0.7;
 const BASE_POSITION = new THREE.Vector3();
 const FOCUS_POSITION = new THREE.Vector3();
 const CAMERA_OFFSET = new THREE.Vector3();
-const COIN_POSITION = new THREE.Vector3();
 const UP = new THREE.Vector3(0, 1, 0);
 const RIGHT = new THREE.Vector3(1, 0, 0);
 
@@ -70,14 +62,30 @@ interface DragState {
 }
 
 // ShapeGeometry emits UVs in local shape units, so screenshot maps need the
-// device screen bounds folded into their repeat/offset before they stretch.
+// screen bounds folded into their repeat/offset. Plane and image aspects rarely
+// match, so the shorter axis is cover-cropped from the centre instead of stretched.
 function mapScreenUvs(
   textures: THREE.Texture[],
   width: number,
   height: number
 ): void {
+  const planeAspect = width / height;
   for (const texture of textures) {
-    texture.repeat.set(1 / width, 1 / height);
+    const image = texture.image as { width?: number; height?: number } | null;
+    const imageWidth = image?.width ?? 0;
+    const imageHeight = image?.height ?? 0;
+    if (imageWidth <= 0 || imageHeight <= 0) {
+      texture.repeat.set(1 / width, 1 / height);
+      texture.offset.set(0.5, 0.5);
+      texture.needsUpdate = true;
+      continue;
+    }
+    const imageAspect = imageWidth / imageHeight;
+    if (imageAspect > planeAspect) {
+      texture.repeat.set(planeAspect / imageAspect / width, 1 / height);
+    } else {
+      texture.repeat.set(1 / width, imageAspect / planeAspect / height);
+    }
     texture.offset.set(0.5, 0.5);
     texture.needsUpdate = true;
   }
@@ -118,7 +126,6 @@ function FilmScene({
   }
   const film = filmRef.current;
 
-  const coinRef = useRef<THREE.Group>(null);
   const laptopRef = useRef<THREE.Group>(null);
   const phoneRef = useRef<THREE.Group>(null);
   const laptopMaterials = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
@@ -139,20 +146,19 @@ function FilmScene({
   useFrame((root, delta) => {
     const next = getProductFilmState(progress.current, compact, reduce);
     film.activeDevice = next.activeDevice;
-    Object.assign(film.coin, next.coin);
+    film.settled = next.settled;
     Object.assign(film.laptop, next.laptop);
     Object.assign(film.phone, next.phone);
     Object.assign(film.camera, next.camera);
 
-    const share = clamp(film.coin.open);
     const plan = clamp(film.laptop.open);
     const capture = clamp(film.phone.rotation / (Math.PI * 2));
     const captureScreens = clamp(film.phone.screen);
-    const settle = clamp(film.coin.settled);
+    const settle = clamp(film.settled);
     const activeDevice = film.activeDevice;
     const rise = clamp(capture / PHONE_RISE_SPAN);
 
-    settledRef.current = next.coin.settled;
+    settledRef.current = next.settled;
 
     const orbit = orbitRef.current;
     if (!draggingRef.current) {
@@ -165,12 +171,11 @@ function FilmScene({
 
     const railScale = compact ? RAIL_SCALE_COMPACT : 1;
     const push =
-      (share * 0.3 + plan * 0.5 + captureScreens * 0.25 - settle * 0.75) *
-      railScale;
+      (plan * 0.5 + captureScreens * 0.25 - settle * 0.75) * railScale;
     const focusY =
       (compact ? 0.42 : 0.85) +
       (plan * 0.1 + captureScreens * 0.06 - settle * 0.08) * railScale;
-    const focusZ = (share * 0.3 + captureScreens * 0.35) * railScale;
+    const focusZ = captureScreens * 0.35 * railScale;
 
     FOCUS_POSITION.set(film.camera.x, focusY, focusZ);
     BASE_POSITION.set(
@@ -183,20 +188,6 @@ function FilmScene({
     CAMERA_OFFSET.applyAxisAngle(RIGHT, orbit.elevation);
     root.camera.position.copy(FOCUS_POSITION).add(CAMERA_OFFSET);
     root.camera.lookAt(FOCUS_POSITION);
-
-    const coin = coinRef.current;
-    if (coin) {
-      COIN_POSITION.copy(COIN_REST);
-      COIN_POSITION.lerp(compact ? COIN_PUCK_COMPACT : COIN_PUCK_DESKTOP, plan);
-      COIN_POSITION.lerp(COIN_SETTLE, settle);
-      coin.position.copy(COIN_POSITION);
-      const puckScale = THREE.MathUtils.lerp(
-        1,
-        compact ? COIN_PUCK_SCALE_COMPACT : COIN_PUCK_SCALE,
-        plan
-      );
-      coin.scale.setScalar(THREE.MathUtils.lerp(puckScale, 1, settle));
-    }
 
     const laptop = laptopRef.current;
     if (laptop) {
@@ -235,9 +226,6 @@ function FilmScene({
     <>
       <StudioEnvironment settledRef={settledRef} />
       <group scale={compact ? COMPACT_STAGE_SCALE : 1}>
-        <group ref={coinRef}>
-          <MachinedCoin state={film.coin} compact={compact} />
-        </group>
         <group ref={laptopRef} position={[0, LAPTOP_HIDDEN_Y, 0]} visible={false}>
           <StudioLaptop
             state={film}

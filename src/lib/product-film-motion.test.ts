@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { coinSegmentAngles } from "@/three/product-film/coin";
 import { applyScreenOpacities } from "@/three/product-film/laptop";
 import { STUDIO_PALETTE } from "@/three/product-film/studio";
 import {
@@ -10,10 +9,29 @@ import {
 } from "./product-film-motion";
 
 describe("product-film motion", () => {
-  it("opens coin arcs only during the share chapter", () => {
-    expect(getProductFilmState(0.05, false, false).coin.open).toBe(0);
-    expect(getProductFilmState(0.22, false, false).coin.open).toBeGreaterThan(0);
-    expect(getProductFilmState(0.53, false, false).coin.open).toBe(0);
+  it("ramps the settle outro between 0.88 and 0.98", () => {
+    expect(getProductFilmState(0.5, false, false).settled).toBe(0);
+    expect(getProductFilmState(0.88, false, false).settled).toBe(0);
+    expect(getProductFilmState(0.93, false, false).settled).toBeGreaterThan(0);
+    expect(getProductFilmState(1, false, false).settled).toBe(1);
+  });
+
+  it("opens the laptop during the share chapter, then crossfades its screens", () => {
+    const closed = getProductFilmState(0.12, false, false);
+    expect(closed.laptop.open).toBe(0);
+    expect(getProductFilmState(0.3, false, false).laptop.open).toBe(1);
+    expect(closed.laptop.screen).toBe(0);
+    expect(getProductFilmState(0.5, false, false).laptop.screen).toBe(2);
+  });
+
+  it("rotates the phone then reveals its screens from 0.55 to 0.8", () => {
+    const early = getProductFilmState(0.55, false, false);
+    expect(early.phone.rotation).toBe(0);
+    expect(
+      getProductFilmState(0.68, false, false).phone.rotation
+    ).toBeCloseTo(Math.PI * 2, 5);
+    expect(early.phone.screen).toBe(0);
+    expect(getProductFilmState(0.8, false, false).phone.screen).toBe(2);
   });
 
   it("moves focus from laptop to phone after the product handoff", () => {
@@ -40,13 +58,6 @@ describe("product-film motion", () => {
   it("makes neighboring screenshot opacities complementary", () => {
     const values = screenCrossfade(1.2, 3, 0.35);
     expect(values[1]! + values[2]!).toBeCloseTo(1, 5);
-  });
-
-  it("partitions a complete coin into four non-overlapping arcs", () => {
-    const arcs = coinSegmentAngles([0.4, 0.25, 0.2, 0.15]);
-    expect(arcs).toHaveLength(4);
-    expect(arcs[0]!.start).toBeCloseTo(0);
-    expect(arcs.at(-1)?.end).toBeCloseTo(Math.PI * 2);
   });
 
   it("writes no opacity outside the zero-to-one range", () => {

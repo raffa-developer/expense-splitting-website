@@ -31,9 +31,6 @@ const FRONT_PANEL_Z = 0.038;
 const BACK_T = 0.012;
 const BACK_PANEL_Z = -0.044;
 
-const SCREEN_W = 0.7;
-const SCREEN_H = 1.515;
-const SCREEN_RADIUS = 0.075;
 const SCREEN_FADE = 0.7;
 const SCREEN_STAGGER = 0.0004;
 const SCREEN_Z = 0.0462;
@@ -159,9 +156,9 @@ export function StudioPhone({
   const displayGeometry = useMemo(
     () =>
       createRoundedScreenGeometry(
-        SCREEN_W,
-        SCREEN_H,
-        SCREEN_RADIUS,
+        WINDOW_W,
+        WINDOW_H,
+        WINDOW_RADIUS,
         compact ? 5 : 8
       ),
     [compact]
@@ -353,7 +350,7 @@ export function StudioPhone({
       />
 
       <mesh position={[0, 0, REFLECTION_Z]} renderOrder={7}>
-        <planeGeometry args={[SCREEN_W, SCREEN_H]} />
+        <planeGeometry args={[WINDOW_W, WINDOW_H]} />
         <meshBasicMaterial
           map={reflectionTexture}
           transparent

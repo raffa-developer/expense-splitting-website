@@ -1,6 +1,5 @@
 import desktopDashboard from "@/assets/screens/desktop-dashboard.png";
 import mobileDashboard from "@/assets/screens/mobile-dashboard.png";
-import { StaticCoin } from "@/components/static-coin";
 import { useI18n } from "@/lib/i18n";
 
 export function ProductFilmFallback({ compact }: { compact: boolean }) {
@@ -35,22 +34,14 @@ export function ProductFilmFallback({ compact }: { compact: boolean }) {
   if (compact) {
     return (
       <div className="relative flex h-full w-full items-center justify-center px-6">
-        <div className="absolute bottom-2 left-[calc(50%+2.5rem)] w-32 sm:w-40">
-          <StaticCoin className="opacity-90" />
-        </div>
         {frame}
       </div>
     );
   }
 
   return (
-    <div className="absolute inset-0">
-      <div className="absolute bottom-48 left-[36%] w-40 lg:w-52">
-        <StaticCoin className="opacity-90" />
-      </div>
-      <div className="absolute top-24 right-6 bottom-48 left-[54%] flex items-center justify-center">
-        {frame}
-      </div>
+    <div className="absolute top-24 right-6 bottom-48 left-[54%] flex items-center justify-center">
+      {frame}
     </div>
   );
 }

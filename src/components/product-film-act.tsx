@@ -12,7 +12,7 @@ import { ArrowDown } from "lucide-react";
 import { ProductFilmFallback } from "@/components/product-film-fallback";
 import { GithubMark } from "@/components/nav";
 import { clamp, smoothstep, useScrollProgress } from "@/lib/animation";
-import { useI18n, type MessageKey } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { useMotion } from "@/lib/motion";
 import {
   PRODUCT_FILM_CAPTION_EDGES,
@@ -70,19 +70,11 @@ const CAPTIONS: ReadonlyArray<{ key: FilmCaptionKey; start: number }> = [
   { key: "film.settle", start: PRODUCT_FILM_CAPTION_EDGES[2] }
 ];
 
-const SHARE_ROWS: ReadonlyArray<{ key: MessageKey; tint: string }> = [
-  { key: "film.share1", tint: "#b9c3cd" },
-  { key: "film.share2", tint: "#72e1b1" },
-  { key: "film.share3", tint: "#59636e" },
-  { key: "film.share4", tint: "#080b10" }
-];
-
 export function ProductFilmAct() {
   const { t } = useI18n();
   const section = useRef<HTMLElement | null>(null);
   const hero = useRef<HTMLDivElement>(null);
   const captions = useRef<(HTMLParagraphElement | null)[]>([]);
-  const shares = useRef<(HTMLDivElement | null)[]>([]);
   const hint = useRef<HTMLParagraphElement>(null);
   const wide = useMediaQuery("(min-width: 900px)");
   const { motion } = useMotion();
@@ -130,20 +122,6 @@ export function ProductFilmAct() {
       if (hint.current) {
         hint.current.style.opacity = String(clamp(1 - value / 0.12));
       }
-      const open =
-        smoothstep(0.1, 0.26, value) * (1 - smoothstep(0.31, 0.42, value));
-      shares.current.forEach((row, index) => {
-        if (!row) {
-          return;
-        }
-        const enter = smoothstep(
-          0.12 + index * 0.02,
-          0.22 + index * 0.02,
-          value
-        );
-        row.style.opacity = String(open * enter);
-        row.style.transform = `translateY(${(1 - enter) * 8}px)`;
-      });
     },
     !reduce
   );
@@ -172,32 +150,7 @@ export function ProductFilmAct() {
     if (hint.current) {
       hint.current.style.opacity = "0";
     }
-    shares.current.forEach((row) => {
-      if (!row) {
-        return;
-      }
-      row.style.opacity = "0";
-      row.style.transform = "translateY(8px)";
-    });
   }, [reduce, progress]);
-
-  const shareRows = SHARE_ROWS.map((row, index) => (
-    <div
-      key={row.key}
-      data-film-share={row.key}
-      ref={(element) => {
-        shares.current[index] = element;
-      }}
-      className="flex items-center gap-2 text-sm text-ink opacity-0 [text-shadow:0_1px_8px_rgba(0,0,0,0.85)]"
-    >
-      <span
-        aria-hidden="true"
-        className="size-2.5 shrink-0 rounded-full ring-1 ring-white/20"
-        style={{ background: row.tint }}
-      />
-      <span className="money">{t(row.key)}</span>
-    </div>
-  ));
 
   return (
     <section
@@ -289,19 +242,9 @@ export function ProductFilmAct() {
             {!showCanvas && !wide ? (
               <ProductFilmFallback compact={true} />
             ) : null}
-            {wide ? (
-              <div className="absolute top-1/2 left-6 z-20 flex -translate-y-1/2 flex-col gap-2">
-                {shareRows}
-              </div>
-            ) : null}
           </div>
 
           <div className="mx-auto w-full max-w-6xl shrink-0 px-6 pb-14 sm:pb-20">
-            {!wide ? (
-              <div className="mb-3 flex max-w-xl flex-col gap-1.5">
-                {shareRows}
-              </div>
-            ) : null}
             <div className="relative h-32 max-w-xl">
               {CAPTIONS.map((caption, index) => (
                 <p

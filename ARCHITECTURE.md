@@ -30,11 +30,10 @@ Verification).
 | --- | --- |
 | `src/App.tsx` | Page composition and the global scroll progress bar |
 | `src/components/product-film-act.tsx` | The film act: hero, captions, canvas gating, error boundary |
-| `src/components/product-film-fallback.tsx` | Labelled screenshot figure plus `StaticCoin` |
+| `src/components/product-film-fallback.tsx` | Labelled screenshot figure for no-WebGL and out-of-range fallbacks |
 | `src/components/mechanics.tsx` | The split-types section |
 | `src/components/*-section.tsx` | The remaining page acts |
 | `src/components/nav.tsx`, `footer.tsx` | Chrome, language toggle, GitHub link |
-| `src/components/static-coin.tsx` | SVG coin used when WebGL is unavailable |
 | `src/lib/animation.ts` | anime.js wrappers: `useScrollProgress`, `useGlobalScrollProgress`, `useReveal`, `clamp`, `smoothstep` |
 | `src/lib/motion.tsx` | Motion provider: system preference plus a persisted on/off override |
 | `src/lib/product-film-motion.ts` | Pure progress-to-state math: chapters, captions, orbit clamp, screen crossfade |
@@ -43,7 +42,6 @@ Verification).
 | `src/lib/i18n.tsx` | pt-PT and en dictionaries, provider, `useI18n` |
 | `src/lib/site.ts` | `GITHUB_URL`, `DEMO_URL` |
 | `src/three/product-film/scene.tsx` | The one `<Canvas>`: camera rail, drag orbit, model assembly |
-| `src/three/product-film/coin.tsx` | `MachinedCoin`, all procedural |
 | `src/three/product-film/laptop.tsx` | `StudioLaptop` plus shared rounded-geometry helpers |
 | `src/three/product-film/phone.tsx` | `StudioPhone` |
 | `src/three/product-film/studio.tsx` | Studio floor, fog, lights, procedural environment map |
@@ -60,7 +58,7 @@ the nav, five sections, and the footer. Section order and heights:
 | --- | --- | --- |
 | `ProductFilmAct` | 420vh wide, 320vh compact | Hero copy, film canvas, caption band |
 | `Mechanics` | auto | How the four split types work |
-| `SettleSection` | auto | Settlement explanation, coin slices |
+| `SettleSection` | auto | Settlement explanation, interactive transfer list |
 | `TechSection` | auto | Stack and repository facts |
 | `RunSection` | auto | `docker compose` copy-paste block |
 
@@ -128,21 +126,26 @@ hero fades and lifts out through `smoothstep(0.1, 0.24, progress)`.
 compact, reduce)` returns the entire film state and pins the value to 1 when `reduce`
 is true.
 
+The film is device-only: two product chapters that open and hand off between the
+laptop and the phone, then a settle outro. There is no coin.
+
 | Progress | Chapter | What moves |
 | --- | --- | --- |
-| 0.00–0.34 | `film.share` | Coin wedges open 0.10–0.26, close 0.31–0.42 |
-| 0.34–0.62 | `film.laptop` | Lid opens 0.34–0.48, screens crossfade 0.43–0.61 |
-| 0.62–0.90 | `film.phone` | 2π rotation 0.62–0.72, screens 0.69–0.82, phone rises |
-| 0.88–1.00 | `film.settle` | Coin settles 0.88–0.98, inlay lights, devices exit |
+| 0.00–0.34 | `film.share` | Laptop rises and its lid opens 0.12–0.30 |
+| 0.34–0.62 | `film.laptop` | Screens crossfade 0.30–0.50 |
+| 0.62–0.90 | `film.phone` | 2π rotation 0.55–0.68, screens 0.62–0.80, phone rises |
+| 0.88–1.00 | `film.settle` | `settled` ramps 0.88–0.98, green fill lights, devices exit |
 
 - `activeDevice` is `laptop` below 0.53, `phone` below 0.82, then `null`.
+- `settled` is top-level state (`smoothstep(0.88, 0.98, value)`); it drives the
+  studio's green point fill, the phone scale-down, and the device exit staging.
 - Caption edges live in `PRODUCT_FILM_CAPTION_EDGES` (`0.34 / 0.62 / 0.9`) with a
   0.05 smoothstep fade. `productFilmCaptionKey` picks the active one; inactive
   captions carry `aria-hidden="true"`.
 - Camera focus and push are computed each frame from the state and scaled by
-  `railScale` (0.3 compact): `push = share*0.3 + plan*0.5 + screens*0.25 - settle*0.75`;
-  focus height is 0.85 wide / 0.42 compact. `camera.z` stays 6.5 and the push moves
-  the camera toward the focus.
+  `railScale` (0.3 compact): `push = plan*0.5 + screens*0.25 - settle*0.75`, and
+  `focusZ = screens*0.35*railScale`; focus height is 0.85 wide / 0.42 compact.
+  `camera.z` stays 6.5 and the push moves the camera toward the focus.
 - `screenCrossfade(position, count, fade)` returns complementary opacities: the two
   neighbouring screens always sum to 1 and the rest are 0, so transitions show no
   black gap and no double exposure.
@@ -151,20 +154,15 @@ is true.
 
 Nothing loads a model file. Every mesh is built at runtime:
 
-- `product-film/coin.tsx` — lathe-turned shell with a rim recess, two grooves and a
-  central well, four extruded wedges weighted `[0.4, 0.25, 0.2, 0.15]` that tilt and
-  slide apart with `coin.open`, 90 instanced ticks (54 compact), a dark ring filling
-  the wedge void, and an emissive green torus inlay, core disc, and point light driven
-  by `coin.settled`.
 - `product-film/laptop.tsx` — RoundedBox base, extruded rounded keyboard slab with
   instanced keys (14×5; 10×4 compact), trackpad, three hinge barrels, and a lid group
-  rotating `open * 1.8 rad`; three screen planes crossfade with `SCREEN_FADE = 0.5`,
-  covered by glass and an additive reflection; a contact-shadow plane grounds it. The
-  file also exports the shared rounded-slab/ring/screen geometry helpers used by the
-  phone.
+  rotating `open * 1.8 rad`; three screen planes fill the full 2.5×1.7 display and
+  crossfade with `SCREEN_FADE = 0.5`, covered by matching glass and an additive
+  reflection; a contact-shadow plane grounds it. The file also exports the shared
+  rounded-slab/ring/screen geometry helpers used by the phone.
 - `product-film/phone.tsx` — rounded-ring body, front and back glass panels, three
-  screens crossfading with `SCREEN_FADE = 0.7`, a ceramic camera island with three
-  lenses and a flash, and side buttons.
+  screens filling the 0.8×1.7 frame window and crossfading with `SCREEN_FADE = 0.7`,
+  a ceramic camera island with three lenses and a flash, and side buttons.
 - `product-film/studio.tsx` — 64-unit floor plane, `Fog(studioBlack, 9, 30)`, a
   gradient equirectangular environment canvas (three light blobs), key and cobalt rim
   lights, a green point fill driven by `settled`, and a contact shadow. No HDR files.
@@ -172,7 +170,12 @@ Nothing loads a model file. Every mesh is built at runtime:
 `scene.tsx` loads the three desktop screenshots for the laptop and three mobile ones
 for the phone through `useScreenTextures`. Because `ShapeGeometry` emits UVs in local
 shape units, `mapScreenUvs` folds the screen bounds into each texture's
-`repeat`/`offset` before the fit stretches.
+`repeat`/`offset`. The planes no longer match the screenshot aspects (desktop 1.5 on a
+1.47 plane, mobile 0.462 on a 0.47 plane), so it cover-crops the longer image axis
+from the centre rather than stretching: `repeat.x = (planeAspect / imageAspect) / width`
+when the image is wider, `repeat.y = (imageAspect / planeAspect) / height` when it is
+taller, and the other axis stays `1 / size`. Textures without image dimensions fall
+back to the exact fit.
 
 Compact builds cut curve segments and instancing counts, scale the stage to 0.46, and
 gate devices by chapter, so the same composition fits a phone without a second scene.
@@ -198,8 +201,7 @@ allow, rendering the settled film state from `getProductFilmState(..., reduce=tr
 
 Without WebGL, `ProductFilmFallback` shows a labelled `figure`: the `figcaption` is
 the matching film chapter line (`film.laptop` wide, `film.phone` compact), the app
-screenshot sits in a framed card, `StaticCoin` stands beside it, and the hero copy and
-CTAs stay visible. The same fallback covers a canvas that throws or fails to load, and
+screenshot sits in a framed card, and the hero copy and CTAs stay visible. The same fallback covers a canvas that throws or fails to load, and
 it also mounts on wide viewports whenever the canvas is out of range.
 
 ## Copy and language
@@ -225,7 +227,7 @@ and `card-surface` for glass cards. The hero glow is an inline radial gradient i
 | `--canvas` | `#080b10` | Page and studio background |
 | `--surface`, `--surface-strong` | `#151a22`, `#1e2530` | Cards and code blocks |
 | `--ink`, `--muted` | `#f2f5f7`, `#8f9aa8` | Text |
-| `--pine` | `#72e1b1` | Primary accent, progress bar, coin inlay |
+| `--pine` | `#72e1b1` | Primary accent, progress bar, settle actions |
 | `--apricot` | `#8dbfff` | Secondary accent, film reflections |
 | `--teal`, `--plum`, `--brick`, `--butter` | `#5fb8c9`, `#9b8cf2`, `#d98f9f`, `#d6c98a` | Reserved accent slots, retained in CSS but unreferenced by current components |
 | `--line` | 12% ink | Hairlines and borders |
@@ -235,8 +237,8 @@ self-hosted, so the page needs no external font requests.
 
 ## Verification
 
-`npm test` (Vitest: chapters, orbit clamp, crossfade sums, coin arcs), `npm run
-typecheck`, and `npm run build` are the standing gates. For 3D work the process is a
+`npm test` (Vitest: chapters, device timing, settle ramp, orbit clamp, crossfade
+sums), `npm run typecheck`, and `npm run build` are the standing gates. For 3D work the process is a
 structural Playwright pass against the dev server: step the page through scroll
 fractions at 1440x900 and 390x844, assert zero console and page errors, assert exactly
 one canvas while the film is in view and zero after scrolling past it, then repeat

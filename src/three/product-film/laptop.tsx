@@ -36,9 +36,9 @@ const HINGE_Y = DECK_Y + LID_T / 2 + 0.004;
 const HINGE_BARRELS = [-1.06, 0, 1.06];
 const HINGE_BARREL_LENGTH = 0.9;
 
-const SCREEN_W = 2.4;
-const SCREEN_H = 1.6;
-const SCREEN_RADIUS = 0.055;
+const SCREEN_W = 2.5;
+const SCREEN_H = 1.7;
+const SCREEN_RADIUS = 0.06;
 const SCREEN_FADE = 0.5;
 const SCREEN_STAGGER = 0.0006;
 
@@ -302,8 +302,8 @@ export function StudioLaptop({
   const coverGeometry = useMemo(
     () =>
       createRoundedScreenGeometry(
-        SCREEN_W + 0.1,
-        SCREEN_H + 0.1,
+        SCREEN_W,
+        SCREEN_H,
         SCREEN_RADIUS + 0.02,
         compact ? 5 : 8
       ),

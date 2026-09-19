@@ -27,10 +27,7 @@ export function productFilmCaptionKey(progress: number): FilmCaptionKey {
 
 export interface ProductFilmState {
   activeDevice: ActiveDevice;
-  coin: {
-    open: number;
-    settled: number;
-  };
+  settled: number;
   laptop: {
     open: number;
     screen: number;
@@ -90,19 +87,14 @@ export function getProductFilmState(
 
   return {
     activeDevice: value < 0.53 ? "laptop" : value < 0.82 ? "phone" : null,
-    coin: {
-      open:
-        smoothstep(0.1, 0.26, value) *
-        (1 - smoothstep(0.31, 0.42, value)),
-      settled: smoothstep(0.88, 0.98, value)
-    },
+    settled: smoothstep(0.88, 0.98, value),
     laptop: {
-      open: smoothstep(0.34, 0.48, value),
-      screen: smoothstep(0.43, 0.61, value) * 2
+      open: smoothstep(0.12, 0.3, value),
+      screen: smoothstep(0.3, 0.5, value) * 2
     },
     phone: {
-      rotation: smoothstep(0.62, 0.72, value) * Math.PI * 2,
-      screen: smoothstep(0.69, 0.82, value) * 2
+      rotation: smoothstep(0.55, 0.68, value) * Math.PI * 2,
+      screen: smoothstep(0.62, 0.8, value) * 2
     },
     camera: {
       x: 0,
