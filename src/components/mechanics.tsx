@@ -96,7 +96,20 @@ export function Mechanics() {
                 ))}
               </div>
 
-              <ul className="-mx-5 divide-y divide-line/60 border-t border-line">
+              <p
+                id="mechanics-mode-desc"
+                aria-live="polite"
+                className="text-sm leading-relaxed text-muted"
+              >
+                {t(`mechanics.desc.${mode}` as const)}
+              </p>
+
+              <div className="-mx-5 flex items-center gap-3 border-t border-line px-5 pt-3 text-xs text-muted">
+                <span>{t("mechanics.col.person")}</span>
+                <span className="ml-auto">{t("mechanics.col.share")}</span>
+              </div>
+
+              <ul className="-mx-5 divide-y divide-line/60">
                 {shares.map((share, index) => {
                   const person = PEOPLE[index];
                   if (!person) {

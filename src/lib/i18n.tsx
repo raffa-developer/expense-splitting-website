@@ -47,6 +47,16 @@ const pt = {
   "mechanics.mode.exact": "Exato",
   "mechanics.mode.percentage": "Percentagem",
   "mechanics.mode.shares": "Quotas",
+  "mechanics.desc.equal":
+    "Cada pessoa paga a mesma parte. O cêntimo que sobra fica com a primeira.",
+  "mechanics.desc.exact":
+    "Cada pessoa paga um valor fixo. A soma tem de dar o total.",
+  "mechanics.desc.percentage":
+    "Cada pessoa paga uma percentagem do total, definida por ti.",
+  "mechanics.desc.shares":
+    "O total divide-se por pesos, não por cabeças. Quem tem quota 2 paga o dobro.",
+  "mechanics.col.person": "Pessoa",
+  "mechanics.col.share": "Parte",
   "mechanics.line.equal": "parte igual",
   "mechanics.line.exact": "valor fixo",
   "mechanics.exact": "soma exata",
@@ -128,6 +138,16 @@ const en: Record<keyof typeof pt, string> = {
   "mechanics.mode.exact": "Exact",
   "mechanics.mode.percentage": "Percentage",
   "mechanics.mode.shares": "Shares",
+  "mechanics.desc.equal":
+    "Everyone pays the same part. The leftover cent goes to the first person.",
+  "mechanics.desc.exact":
+    "Everyone pays a fixed amount. The parts have to add up to the total.",
+  "mechanics.desc.percentage":
+    "Everyone pays a percentage of the total that you set.",
+  "mechanics.desc.shares":
+    "The total splits by weight, not by headcount. A weight of 2 pays double.",
+  "mechanics.col.person": "Person",
+  "mechanics.col.share": "Share",
   "mechanics.line.equal": "equal part",
   "mechanics.line.exact": "fixed amount",
   "mechanics.exact": "sums exactly",
