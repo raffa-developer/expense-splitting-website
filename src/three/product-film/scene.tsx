@@ -63,7 +63,7 @@ interface DragState {
 
 // ShapeGeometry emits UVs in local shape units, so screenshot maps need the
 // screen bounds folded into their repeat/offset. Plane and image aspects rarely
-// match, so the shorter axis is cover-cropped from the centre instead of stretched.
+// match, so the longer image axis is cover-cropped from the centre instead of stretched.
 function mapScreenUvs(
   textures: THREE.Texture[],
   width: number,

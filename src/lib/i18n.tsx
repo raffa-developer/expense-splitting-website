@@ -82,7 +82,7 @@ const en: Record<keyof typeof pt, string> = {
   "hero.ctaGithub": "View on GitHub",
   "hero.ctaDemo": "Open demo",
   "hero.ctaDemoSoon": "Demo coming soon",
-  "hero.scroll": "Scroll",
+  "hero.scroll": "Scroll to split",
 
   "film.share": "The bill, split into exact shares.",
   "film.laptop": "Plan together on the group dashboard.",
