@@ -16,8 +16,6 @@ const pt = {
   "nav.tech": "Tecnologia",
   "nav.run": "Correr",
   "nav.github": "GitHub",
-  "nav.motionOn": "Animações ligadas",
-  "nav.motionOff": "Animações desligadas",
 
   "hero.title": "Divide as contas. Mantém a amizade.",
   "hero.body":
@@ -73,8 +71,6 @@ const en: Record<keyof typeof pt, string> = {
   "nav.tech": "Tech",
   "nav.run": "Run it",
   "nav.github": "GitHub",
-  "nav.motionOn": "Animations on",
-  "nav.motionOff": "Animations off",
 
   "hero.title": "Split the bill. Keep the friendship.",
   "hero.body":
@@ -82,7 +78,7 @@ const en: Record<keyof typeof pt, string> = {
   "hero.ctaGithub": "View on GitHub",
   "hero.ctaDemo": "Open demo",
   "hero.ctaDemoSoon": "Demo coming soon",
-  "hero.scroll": "Scroll to split",
+  "hero.scroll": "Scroll",
 
   "film.share": "The bill, split into exact shares.",
   "film.laptop": "Plan together on the group dashboard.",

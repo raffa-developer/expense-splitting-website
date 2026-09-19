@@ -1,7 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Sparkles } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { useMotion } from "@/lib/motion";
 import { GITHUB_URL } from "@/lib/site";
 
 export function GithubMark({ className = "size-4" }: { className?: string }) {
@@ -14,7 +12,6 @@ export function GithubMark({ className = "size-4" }: { className?: string }) {
 
 export function Nav() {
   const { t, locale, setLocale } = useI18n();
-  const { motion, toggle } = useMotion();
   const header = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -87,18 +84,6 @@ export function Nav() {
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={toggle}
-            aria-pressed={motion}
-            aria-label={motion ? t("nav.motionOn") : t("nav.motionOff")}
-            title={motion ? t("nav.motionOn") : t("nav.motionOff")}
-            className={`flex size-9 items-center justify-center rounded-full border border-line transition-colors hover:border-white/25 hover:text-ink ${
-              motion ? "text-ink" : "text-muted"
-            }`}
-          >
-            <Sparkles className="size-4" />
-          </button>
           <a
             href={GITHUB_URL}
             target="_blank"

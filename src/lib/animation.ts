@@ -70,7 +70,7 @@ export function useReveal(
   target: RefObject<HTMLElement | null>,
   delay = 0
 ): void {
-  const { motion } = useMotion();
+  const motion = useMotion();
   useEffect(() => {
     const element = target.current;
     if (!element) {

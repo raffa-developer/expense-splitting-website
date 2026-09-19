@@ -77,7 +77,7 @@ export function ProductFilmAct() {
   const captions = useRef<(HTMLParagraphElement | null)[]>([]);
   const hint = useRef<HTMLParagraphElement>(null);
   const wide = useMediaQuery("(min-width: 900px)");
-  const { motion } = useMotion();
+  const motion = useMotion();
   const reduce = !motion;
   const [webgl, setWebgl] = useState(() => webglSupport === true);
   const near = useInRange(section, 1.1, 0);
