@@ -58,10 +58,12 @@ function DprGuard() {
 
 function Devices({
   progress,
-  reduce
+  reduce,
+  compact
 }: {
   progress: ScrollProgress;
   reduce: boolean;
+  compact: boolean;
 }) {
   const root = useRef<THREE.Group>(null);
   const lid = useRef<THREE.Group | null>(null);
@@ -128,7 +130,7 @@ function Devices({
     }
     if (phone.current) {
       phone.current.position.set(
-        THREE.MathUtils.lerp(-1.55, 0.02, phoneIn),
+        THREE.MathUtils.lerp(compact ? -0.95 : -1.55, 0.02, phoneIn),
         THREE.MathUtils.lerp(-1.05, 0.55, phoneIn),
         THREE.MathUtils.lerp(0.9, 2.2, phoneIn)
       );
@@ -137,7 +139,9 @@ function Devices({
         THREE.MathUtils.lerp(0.5, 0.12, phoneIn),
         0.04
       );
-      phone.current.scale.setScalar(THREE.MathUtils.lerp(0.55, 0.92, phoneIn));
+      phone.current.scale.setScalar(
+        THREE.MathUtils.lerp(compact ? 0.5 : 0.55, 0.92, phoneIn)
+      );
     }
 
     const distance = 7.5 - dollyIn * 4.9 + pullBack * 2.0;
@@ -160,17 +164,19 @@ function Devices({
           depthWrite={false}
         />
       </mesh>
-      <LaptopModel
-        textures={laptopTextures}
-        materialsRef={screenMaterials}
-        lidRef={lid}
-        glowRef={glow}
-      />
+      <group scale={compact ? 0.68 : 1}>
+        <LaptopModel
+          textures={laptopTextures}
+          materialsRef={screenMaterials}
+          lidRef={lid}
+          glowRef={glow}
+        />
+      </group>
       <group
         ref={phone}
-        position={[-1.55, -1.05, 0.9]}
+        position={[compact ? -0.95 : -1.55, -1.05, 0.9]}
         rotation={[-0.12, 0.5, 0.04]}
-        scale={0.55}
+        scale={compact ? 0.5 : 0.55}
       >
         <PhoneModel textures={phoneTextures} materialsRef={phoneMaterials} />
       </group>
@@ -180,10 +186,12 @@ function Devices({
 
 export default function DeviceCanvas({
   progress,
-  reduce = false
+  reduce = false,
+  compact = false
 }: {
   progress: ScrollProgress;
   reduce?: boolean;
+  compact?: boolean;
 }) {
   return (
     <Canvas
@@ -198,7 +206,7 @@ export default function DeviceCanvas({
       <directionalLight position={[3, 4, 6]} intensity={1.2} color="#fff4e8" />
       <pointLight position={[-4, -1, 3]} intensity={1.7} color="#6fbfaa" />
       <pointLight position={[4, 1, 2]} intensity={1.3} color="#ff9e72" />
-      <Devices progress={progress} reduce={reduce} />
+      <Devices progress={progress} reduce={reduce} compact={compact} />
     </Canvas>
   );
 }

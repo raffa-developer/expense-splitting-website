@@ -22,7 +22,7 @@ export function DeviceAct() {
   const reduce = useMediaQuery("(prefers-reduced-motion: reduce)");
   const webgl = useMemo(() => supportsWebGL(), []);
   const deviceNear = useInRange(section, -0.12, -0.3);
-  const canRenderDevice = webgl && wide;
+  const canRenderDevice = webgl;
   const showDevice = canRenderDevice && deviceNear;
 
   const progress = useScrollProgress(
@@ -87,7 +87,11 @@ export function DeviceAct() {
           <div className="relative mt-6 h-[74vh] min-h-80">
             {showDevice ? (
               <Suspense fallback={null}>
-                <DeviceCanvas progress={progress} reduce={reduce} />
+                <DeviceCanvas
+                  progress={progress}
+                  reduce={reduce}
+                  compact={!wide}
+                />
               </Suspense>
             ) : canRenderDevice ? null : (
               <div
