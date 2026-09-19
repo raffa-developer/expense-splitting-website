@@ -35,9 +35,10 @@ export function DeviceAct() {
         if (!element) {
           return;
         }
+        const enterRamp = index === 0 ? smoothstep(0.28, 0.44, value) : 1;
         const opacity =
           index < 4
-            ? screenOpacity(screen - index, 0.5) * laptopOut
+            ? screenOpacity(screen - index, 0.5) * laptopOut * enterRamp
             : smoothstep(0.8, 0.88, value) * (1 - smoothstep(0.95, 1, value));
         element.style.opacity = String(opacity);
         element.style.transform = `translateY(${(1 - opacity) * 14}px)`;
@@ -107,7 +108,7 @@ export function DeviceAct() {
               </div>
             )}
 
-            <div className="pointer-events-none absolute bottom-2 left-6 h-28 w-[min(18rem,60vw)] sm:bottom-6 sm:w-[min(21rem,70vw)]">
+            <div className="pointer-events-none absolute bottom-2 left-6 h-40 w-[min(18rem,60vw)] sm:bottom-6 sm:h-28 sm:w-[min(21rem,70vw)]">
               {captionsText.map((caption, index) => (
                 <p
                   key={caption}

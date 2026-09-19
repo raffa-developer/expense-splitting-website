@@ -93,9 +93,11 @@ function Devices({
     const screen = smoothstep(0.52, 0.78, value) * 3;
     const phoneScreen = (t / 6) % PHONE_SCREENS.length;
 
+    const laptopDim = 1 - smoothstep(0.9, 1, value) * 0.5;
     screenMaterials.current.forEach((material, index) => {
       if (material) {
-        material.opacity = screenOpacity(screen - index, 0.5);
+        material.opacity =
+          screenOpacity(screen - index, 0.5) * laptopDim;
       }
     });
     phoneMaterials.current.forEach((material, index) => {

@@ -99,7 +99,7 @@ export function LaptopModel({
         args={[0.9, 0.02, 0.7]}
         radius={0.01}
         smoothness={2}
-        position={[0, -0.985, 1.52]}
+        position={[0, -0.985, 1.35]}
       >
         <primitive object={aluminiumDark} attach="material" />
       </RoundedBox>
